@@ -1,0 +1,70 @@
+============================================================
+BASELINE STATE FREEZE
+============================================================
+Timestamp: 2026-04-25T10:07:05+02:00
+Project root: /home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2
+
+==================== ENV ====================
+CONDA_DEFAULT_ENV=env_isaaclab_src
+CONDA_PREFIX=/home/charbel/miniforge3/envs/env_isaaclab_src
+PYTHON=/home/charbel/miniforge3/envs/env_isaaclab_src/bin/python
+Python 3.11.15
+
+==================== WORKING BASELINE COMMAND ====================
+source "$HOME/miniforge3/etc/profile.d/conda.sh"
+conda activate env_isaaclab_src
+export OMNI_KIT_ACCEPT_EULA=YES
+PROJECT_ROOT="$HOME/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2"
+ISAACLAB_ROOT="$PROJECT_ROOT/upstream/IsaacLab"
+UPSTREAM_RWM="$PROJECT_ROOT/upstream/robotic_world_model"
+cd "$UPSTREAM_RWM"
+timeout 120s "$ISAACLAB_ROOT/isaaclab.sh" -p scripts/reinforcement_learning/rsl_rl/train.py --task=Template-Isaac-Velocity-Flat-Anymal-D-Init-v0 --headless
+
+==================== UPSTREAM: robotic_world_model ====================
+PATH=/home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model
+COMMIT=14dbfe9da3f2246448cccee2873b9817603d5ae5
+BRANCH=master
+DESCRIBE=14dbfe9
+STATUS_BEGIN
+STATUS_END
+
+==================== UPSTREAM: IsaacLab ====================
+PATH=/home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/IsaacLab
+COMMIT=3c6e67bb5c7ada942a6d1884ab69338f57596f77
+BRANCH=
+DESCRIBE=v2.3.0
+STATUS_BEGIN
+STATUS_END
+
+==================== UPSTREAM: rsl_rl_rwm ====================
+PATH=/home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/rsl_rl_rwm
+COMMIT=18eebcdd7145284c8d5eed5d8ed1a4b96c649693
+BRANCH=main
+DESCRIBE=18eebcd
+STATUS_BEGIN
+STATUS_END
+
+==================== PYTHON PACKAGE VERSIONS ====================
+mbrl==0.1.0
+rsl-rl-lib==3.1.0
+isaaclab==0.54.3
+isaaclab_rl==0.4.4
+isaaclab_tasks==0.11.6
+isaacsim==5.0.0.0
+torch==2.7.0+cu128
+
+==================== TORCH CUDA ====================
+TORCH_VERSION= 2.7.0+cu128
+CUDA_AVAILABLE= True
+CUDA_DEVICE_COUNT= 1
+
+==================== KNOWN CAVEATS ====================
+- Upstream untouched ANYmal-D init task runs headlessly and reaches repeated PPO iterations.
+- Startup logs include Warp CUDA cuDeviceGetUuid warnings, but training still proceeds.
+- Intel iGPU is skipped; NVIDIA RTX 4060 Laptop GPU is used as cuda:0.
+- Forced shutdown under timeout may end with carb.tasking Mutex assertion.
+- Baseline is executable; full paper-to-code mapping has not started yet.
+
+==================== SUMMARY ====================
+P0_4_1_BASELINE_FREEZE_STATUS=completed
+MANIFEST_FILE=/home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2/manifests/baseline_state_20260425_100703.txt

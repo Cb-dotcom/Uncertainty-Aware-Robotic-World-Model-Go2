@@ -1,0 +1,178 @@
+============================================================
+GO2 RWM HOST AUDIT
+============================================================
+Timestamp    : 2026-04-15T17:46:04+02:00
+User         : charbel
+Host         : sin-chin
+Project root : /home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2
+
+==================== OS ====================
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 22.04.5 LTS
+Release:	22.04
+Codename:	jammy
+Linux sin-chin 6.8.0-107-generic #107~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Mar 18 23:40:43 UTC  x86_64 x86_64 x86_64 GNU/Linux
+
+==================== GPU ====================
+Wed Apr 15 17:46:04 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.09             Driver Version: 580.126.09     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4060 ...    Off |   00000000:01:00.0  On |                  N/A |
+| N/A   54C    P8              4W /   80W |      56MiB /   8188MiB |      8%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            2791      G   /usr/lib/xorg/Xorg                       45MiB |
++-----------------------------------------------------------------------------------------+
+
+==================== CPU / RAM ====================
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           39 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  16
+On-line CPU(s) list:                     0-15
+Vendor ID:                               GenuineIntel
+Model name:                              13th Gen Intel(R) Core(TM) i7-13620H
+CPU family:                              6
+Model:                                   186
+Thread(s) per core:                      2
+Core(s) per socket:                      10
+Socket(s):                               1
+Stepping:                                2
+CPU max MHz:                             4900.0000
+CPU min MHz:                             400.0000
+BogoMIPS:                                5836.80
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities ibpb_exit_to_user
+Virtualization:                          VT-x
+L1d cache:                               416 KiB (10 instances)
+L1i cache:                               448 KiB (10 instances)
+L2 cache:                                9.5 MiB (7 instances)
+L3 cache:                                24 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-15
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       6.3Gi       2.6Gi       1.0Gi       6.4Gi       7.7Gi
+Swap:          2.0Gi          0B       2.0Gi
+
+==================== DISK ====================
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p6  240G  110G  118G  49% /
+/dev/nvme0n1p6  240G  110G  118G  49% /
+/dev/nvme0n1p6  240G  110G  118G  49% /
+
+==================== REQUIRED TOOLS ====================
+git          : /usr/bin/git
+curl         : /usr/bin/curl
+wget         : /usr/bin/wget
+gcc          : /usr/bin/gcc
+g++          : /usr/bin/g++
+make         : /usr/bin/make
+cmake        : /usr/bin/cmake
+python3      : /usr/bin/python3
+pip3         : /usr/bin/pip3
+
+==================== RECOMMENDED TOOLS ====================
+conda        : MISSING
+mamba        : MISSING
+git-lfs      : MISSING
+
+==================== TOOL VERSIONS ====================
+git version 2.34.1
+Python 3.10.12
+pip 22.0.2 from /usr/lib/python3/dist-packages/pip (python 3.10)
+gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+cmake version 3.22.1
+/home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2/scripts/00_host_audit_and_upstream_bootstrap.sh: line 79: conda: command not found
+
+==================== ROS2 ====================
+/opt/ros/humble/setup.bash : PRESENT
+AMENT_PREFIX_PATH=/opt/ros/humble
+ROS_DISTRO=humble
+ROS_LOCALHOST_ONLY=0
+ROS_PYTHON_VERSION=3
+ROS_VERSION=2
+
+==================== PROJECT ROOT STATUS ====================
+pwd: /home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2
+--- existing root entries ---
+./forks
+./logs
+./manifests
+./scripts
+./upstream
+
+ROOT_GIT_STATUS=absent
+
+==================== UPSTREAM CLONE ====================
+Cloning into 'robotic_world_model'...
+
+--- REMOTES ---
+origin	https://github.com/leggedrobotics/robotic_world_model.git (fetch)
+origin	https://github.com/leggedrobotics/robotic_world_model.git (push)
+
+--- HEAD COMMIT ---
+14dbfe9da3f2246448cccee2873b9817603d5ae5
+
+--- BRANCH ---
+master
+
+--- STATUS ---
+
+--- TOP-LEVEL TREE ---
+./assets
+./assets/data
+./assets/models
+./.dockerignore
+./.flake8
+./.git
+./.gitattributes
+./.git/branches
+./.git/config
+./.git/description
+./.git/HEAD
+./.git/hooks
+./.gitignore
+./.git/index
+./.git/info
+./.git/logs
+./.git/objects
+./.git/packed-refs
+./.git/refs
+./LICENCE
+./logs
+./logs/offline
+./.pre-commit-config.yaml
+./pyproject.toml
+./README.md
+./rwm.png
+./rwm-u.png
+./scripts
+./scripts/environments
+./scripts/reinforcement_learning
+./scripts/rename_template.py
+./source
+./source/mbrl
+./.vscode
+./.vscode/extensions.json
+./.vscode/.gitignore
+./.vscode/tasks.json
+./.vscode/tools
+
+==================== SUMMARY ====================
+Manifest written to: /home/charbel/Desktop/Robotics_Masters_UniGe/Sem2/CoGaR/Uncertainty-Aware-Robotic-World-Model-Go2/manifests/host_audit_20260415_174604.txt
+CONDA_STATUS=missing
+REQUIRED_TOOLS_STATUS=ok
+UPSTREAM_CLONE_STATUS=ok
+STEP_P0_3_1_STATUS=completed

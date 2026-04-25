@@ -1,0 +1,86 @@
+# ============================================================
+# Top-level project repo policy
+# ============================================================
+
+# --------------------
+# Upstream dependencies (kept local, not tracked)
+# --------------------
+/upstream/
+/upstream/robotic_world_model/
+/upstream/IsaacLab/
+/upstream/rsl_rl_rwm/
+
+# --------------------
+# Local setup/debug scripts (kept local, not tracked)
+# --------------------
+/scripts/
+
+# --------------------
+# Logs and generated runtime outputs
+# --------------------
+/logs/
+*.log
+*.out
+*.err
+
+# --------------------
+# Local environments
+# --------------------
+/.venv/
+/venv/
+/env/
+/env_*/
+/miniforge3/
+/conda-meta/
+
+# --------------------
+# Python cache/build
+# --------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+
+# --------------------
+# Training artifacts
+# --------------------
+**/runs/
+**/outputs/
+**/checkpoints/
+**/*.pt
+**/*.pth
+**/*.ckpt
+**/*.onnx
+**/*.npz
+
+# --------------------
+# Omniverse / Isaac runtime artifacts
+# --------------------
+**/omni/logs/
+**/kit_*.log
+**/.nvidia-omniverse/
+**/.cache/ov/
+**/.cache/omniverse/
+
+# --------------------
+# Editors / OS junk
+# --------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --------------------
+# Temporary files
+# --------------------
+*.tmp
+*.temp
+*~
