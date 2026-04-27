@@ -1,61 +1,22 @@
 # Go2 Integration of an Uncertainty-Aware Robotic World Model
 
-## Project scope
-This repository is the research workspace for reproducing and extending the ETH Zurich robotic world model stack toward a future Unitree Go2 integration.
+Research workspace for reproducing and extending the ETH Zurich robotic world model stack toward a future Unitree Go2 integration.
 
-The intended long-term direction is:
-1. reproduce and understand the current uncertainty-aware robotic world model stack,
-2. validate the untouched upstream baseline locally,
-3. map paper concepts to code,
-4. port the pipeline toward Go2,
-5. only then evaluate possible research contributions.
+## Documentation
 
-## Current status
-The local software stack has been recovered and a bounded baseline validation has been completed.
+The full project documentation lives in `docs/`. If you have MkDocs installed, run `mkdocs serve` from the repo root to render it locally. Key entry points:
 
-Validated so far:
-- source-based Isaac Lab workspace is operational,
-- upstream `robotic_world_model` is locally runnable,
-- the untouched ANYmal-D initialization baseline launches successfully,
-- the canonical bounded smoke test reaches learning iterations,
-- baseline caveats and shutdown-path behavior have been classified.
-
-Not yet completed:
-- full paper-to-code mapping,
-- full scientific reproduction of the paper claims,
-- Go2 integration,
-- dataset adaptation,
-- world-model internals analysis,
-- spiking extension work.
-
-## Validated baseline
-Current validated baseline:
-- task: `Template-Isaac-Velocity-Flat-Anymal-D-Init-v0`
-- launcher: `upstream/IsaacLab/isaaclab.sh`
-- environment: `env_isaaclab_src`
-
-A bounded smoke run is considered successful if:
-- environment setup completes, and
-- `Learning iteration 0/300` appears.
-
-A timeout-based exit is currently accepted for smoke validation because external termination is known to produce non-graceful shutdown behavior.
-
-See:
-- `docs/baseline_status.md`
-- `docs/baseline_smoke_command.md`
-
-
-## Next phase
-The next technical phase is paper-to-code mapping:
-- identify where the world model is implemented,
-- identify where uncertainty is represented,
-- identify the practical training path relative to the papers,
-- separate what is inherited from Isaac/RSL-RL versus what is novel to the RWM stack.
+- `docs/index.md` — project scope, current status, and validated baseline.
+- `docs/baseline.md` — the canonical smoke command and what counts as a successful run.
+- `docs/repo-map.md` — where each part of the pipeline lives across the three upstream repos.
+- `docs/roadmap.md` — phase plan (P0 to P4).
+- `docs/paper-a-*.md` — paper-to-code mapping for *Robotic World Model: A Neural Network Simulator for Robust Policy Optimization in Robotics*.
 
 ## Workspace layout
-- `docs/` — supervisor-facing and project-facing documentation
-- `manifests/` — frozen environment / state records
+
+- `docs/` — project documentation
+- `manifests/` — frozen environment and state records
 - `notes/` — working technical notes
-- `upstream/` — local upstream dependencies (not tracked here)
-- `logs/` — local execution/debug logs (not tracked here)
-- `scripts/` — local setup/debug scripts (not tracked here)\n
+- `upstream/` — local upstream dependencies (not tracked in this repo)
+- `logs/` — local execution and debug logs (not tracked in this repo)
+- `scripts/` — local setup and debug scripts (not tracked in this repo)

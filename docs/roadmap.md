@@ -1,41 +1,53 @@
 # Roadmap
 
+**Current phase:** P0 (Setup and repository documentation), in progress.
+
 ## Phase overview
 
-### P0: Setup & Repository documentation
-Status: in progress
+### P0 — Setup and repository documentation
 
-Current goals:
-- validated full setup running,
-- define clean top-level repository policy,
-- create supervisor-facing documentation,
-- prepare a clean first Git history,
-- document portability assumptions before moving to in depth analysis.
+*In progress.*
 
-### P1: Paper-to-code mapping
-Status: next
+Goals for this phase:
 
-Planned goals:
-- map both related papers to the implementation stack,
-- identify world-model modules,
-- identify uncertainty logic,
-- identify runner/training path,
-- identify losses and where they are encoded,
-- distinguish conceptual paper structure from practical code structure.
+- Validate the full setup running locally.
+- Define a clean top-level repository policy.
+- Create supervisor-facing documentation.
+- Prepare a clean first Git history.
+- Document portability assumptions before moving to in-depth analysis.
 
-### P2: Controlled reproduction understanding
-Planned goals:
-- inspect whether current code reproduces the claimed method or an adapted practical variant,
-- validate the role of upstream RSL-RL and Isaac abstractions,
-- identify which results are likely reproducible on current hardware.
+### P1 — Paper-to-code mapping
 
-### P3: Go2 transfer planning
-Planned goals:
-- map embodiment assumptions from ANYmal-D to Go2,
-- identify required interface, observation, action, reward, and asset changes,
-- assess sim-only versus real-robot implications.
+*Next.*
 
-### P4: Contribution phase
-Planned goals:
-- choose the strongest feasible contribution after the baseline is properly understood,
-- possible directions include robustness, embodiment transfer, compute efficiency, or a justified spiking recurrent extension.
+Goals:
+
+- Map both related papers to the implementation stack.
+- Identify the world-model modules.
+- Identify the uncertainty logic.
+- Identify the runner and training path.
+- Identify the losses and where they are encoded.
+- Distinguish conceptual paper structure from practical code structure.
+
+### P2 — Controlled reproduction and understanding
+
+Goals:
+
+- Determine whether the current code reproduces the claimed method or an adapted practical variant.
+- Validate the role of upstream RSL-RL and Isaac Lab abstractions.
+- Identify which results are likely reproducible on the available hardware.
+
+### P3 — Go2 transfer planning
+
+Goals:
+
+- Map embodiment assumptions from ANYmal-D to Go2.
+- Identify required interface, observation, action, reward, and asset changes.
+- Assess the implications of sim-only versus real-robot work.
+
+### P4 — Contribution phase
+
+Goals:
+
+- Choose the strongest feasible contribution after the baseline is properly understood.
+- Possible directions include robustness, embodiment transfer, compute efficiency, or a justified spiking recurrent extension.

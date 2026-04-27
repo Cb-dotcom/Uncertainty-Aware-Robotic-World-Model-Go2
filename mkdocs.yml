@@ -1,0 +1,41 @@
+site_name: Uncertainty-Aware Robotic World Model — Go2
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - Baseline: baseline.md
+  - Repo Map: repo-map.md
+  - Paper A:
+      - Task Modes: paper-a-task-modes.md
+      - Runtime Flow: paper-a-runtime-flow.md
+      - Loss Map: paper-a-loss-map.md
+  - Project meta:
+      - Roadmap: roadmap.md
+      - Portability: portability.md
+      - Repo Strategy: repo-strategy.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
