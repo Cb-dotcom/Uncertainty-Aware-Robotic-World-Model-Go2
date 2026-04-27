@@ -1,0 +1,11 @@
+[submodule "upstream/IsaacLab"]
+	path = upstream/IsaacLab
+	url = https://github.com/isaac-sim/IsaacLab.git
+
+[submodule "upstream/robotic_world_model"]
+	path = upstream/robotic_world_model
+	url = https://github.com/Cb-dotcom/robotic_world_model.git
+
+[submodule "upstream/rsl_rl_rwm"]
+	path = upstream/rsl_rl_rwm
+	url = https://github.com/Cb-dotcom/rsl_rl_rwm.git
