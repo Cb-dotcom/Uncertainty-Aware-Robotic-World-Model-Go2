@@ -1,6 +1,6 @@
 # Baseline Execution
 
-The baseline execution check verifies that the upstream codebase still runs end-to-end on the local machine. Status: **Validated**, last confirmed in [`manifests/baseline_state_20260425_100703.txt`](../../manifests/baseline_state_20260425_100703.txt).
+The baseline execution check verifies that the upstream codebase still runs end-to-end on the local machine. Status: **Validated**, last confirmed in [`manifests/baseline_state_20260425_100703.txt`](https://github.com/Cb-dotcom/Uncertainty-Aware-Robotic-World-Model-Go2/blob/main/manifests/baseline_state_20260425_100703.txt).
 
 ## What it verifies
 

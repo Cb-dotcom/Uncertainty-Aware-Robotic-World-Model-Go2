@@ -96,7 +96,7 @@ The runner also stored Git diffs for `robotic_world_model` and `rsl_rl_rwm` unde
 
 ## Required upstream fix
 
-The pretraining run requires a small fix in `rsl_rl_rwm/rsl_rl/runners/mbpo_on_policy_runner.py` to handle the case where imagination is disabled. The fix narrative is documented in [Submodules and Forks](../development/submodules-and-forks.md#pretraining-fix). Without it, the run crashes at the end of the first iteration.
+The pretraining run requires a small fix in `rsl_rl_rwm/rsl_rl/runners/mbpo_on_policy_runner.py` to handle the case where imagination is disabled. The fix narrative is documented in [Implementation Analysis §11](../world-model/implementation-analysis.md#11-the-pretraining-fix). Without it, the run crashes at the end of the first iteration.
 
 ## What the validation establishes
 
