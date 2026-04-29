@@ -1,59 +1,49 @@
-# Go2 Integration of an Uncertainty-Aware Robotic World Model
+# Project Documentation
 
-## Project scope
+This is the technical documentation for a research workspace that reproduces, analyzes, and extends the ETH Zurich Robotic World Model pipeline for quadruped locomotion, with the eventual target of Unitree Go2 integration.
 
-This repository is the research workspace for reproducing and extending the ETH Zurich robotic world model stack toward a future Unitree Go2 integration.
+The project builds on two papers by Li, Krause, and Hutter (ETH Zurich):
 
-The intended long-term direction is:
+1. Robotic World Model (RWM) with the MBPO-PPO policy optimizer, trained online with environment interaction.
+2. Uncertainty-Aware Robotic World Model (RWM-U) with the MOPO-PPO policy optimizer, trained fully offline with ensemble-based uncertainty penalization.
 
-1. Reproduce and understand the current uncertainty-aware robotic world model stack.
-2. Validate the untouched upstream baseline locally.
-3. Map paper concepts to code.
-4. Port the pipeline toward Go2.
-5. Only then evaluate possible research contributions.
+A single upstream codebase implements both. The default configuration runs as RWM with MBPO-PPO; setting `ensemble_size > 1` and `uncertainty_penalty_weight > 0` activates the RWM-U + MOPO-PPO path. The project will exercise both.
 
-## Current status
+For high-level project status and the milestone checklist, see the [repository README](https://github.com/Cb-dotcom/Uncertainty-Aware-Robotic-World-Model-Go2). This documentation site is the technical companion to that README.
 
-The local software stack has been recovered and a bounded baseline validation has been completed.
+## Reading paths
 
-Validated:
+Different readers will want different starting points.
 
-- Source-based Isaac Lab workspace is operational.
-- Upstream `robotic_world_model` is locally runnable.
-- The untouched ANYmal-D initialization baseline launches successfully.
-- The canonical bounded smoke test reaches learning iterations.
-- Baseline caveats and shutdown-path behavior have been classified.
+- For project status and direction: [Current Status](project/current-status.md), then [Roadmap](project/roadmap.md), then [Reproduction Status](validation/reproduction-status.md) for the per-claim verification ledger.
+- For setup and reproduction: [Local Environment](setup/local-environment.md), then [Hardware and System Specs](setup/hardware-and-system-specs.md), then [Baseline Execution](validation/baseline-execution.md) for the canonical command and what it verifies.
+- For paper-to-code understanding: [Paper Analysis](world-model/paper-analysis.md) for the method as the paper presents it, [Implementation Analysis](world-model/implementation-analysis.md) for what the code does, and [Paper-to-Code Synthesis](world-model/paper-to-code-synthesis.md) for the merged view including discrepancies.
 
-Not yet completed:
+## Documentation layout
 
-- Full paper-to-code mapping.
-- Full scientific reproduction of the paper claims.
-- Go2 integration.
-- Dataset adaptation.
-- World-model internals analysis.
-- Research contribution.
+- **Project**: goal, repository layout, status, roadmap.
+- **Setup**: local environment, hardware specs, lab workstation migration.
+- **Validation**: what has been executed locally and what has been verified.
+- **Robotic World Model**: paper, code, synthesis, task structure, runtime flow.
+- **Development**: submodule and fork strategy.
 
-## Validated baseline
+## Conventions
 
-The current validated baseline is:
+The documentation makes two kinds of claims, each with its own vocabulary.
 
-- Task: `Template-Isaac-Velocity-Flat-Anymal-D-Init-v0`
-- Launcher: `upstream/IsaacLab/isaaclab.sh`
-- Environment: `env_isaaclab_src`
+Execution claims describe whether code runs as expected:
 
-A bounded smoke run is considered successful when environment setup completes and the log line `Learning iteration 0/300` appears. A timeout-based exit is currently accepted for smoke validation, because external termination is known to produce non-graceful shutdown behavior.
+- **Validated**: a concrete command was executed, the expected outcome was observed, and the run is cited.
+- **Structurally understood**: the code path has been traced and is consistent with its expected role, but no execution has been run end-to-end.
+- **Not verified**: the claim has neither been executed nor traced sufficiently to make a judgment.
 
-The full procedure, command, and known caveats are documented in `baseline.md`.
+Mapping claims describe whether code corresponds to what the paper states:
 
-## Next phase
+- **Mapped**: the paper concept has been identified in the code, with a file path or symbol reference.
+- **Partially mapped**: the concept is identified but the code differs from the paper in scope or simplification, and the difference is documented.
+- **Discrepancy noted**: the code diverges from the paper in a meaningful way (for example, a different loss formulation or an inactive component) and the divergence is documented.
+- **Not mapped**: no code location has been identified yet for the paper concept.
 
-The next technical phase is paper-to-code mapping. See `roadmap.md` for the full phase plan.
+The [Reproduction Status](validation/reproduction-status.md) page tracks execution claims. The [Paper-to-Code Synthesis](world-model/paper-to-code-synthesis.md) page tracks mapping claims and discrepancies.
 
-## Workspace layout
-
-- `docs/` — supervisor-facing and project-facing documentation
-- `manifests/` — frozen environment and state records
-- `notes/` — working technical notes
-- `upstream/` — local upstream dependencies (not tracked in this repo)
-- `logs/` — local execution and debug logs (not tracked in this repo)
-- `scripts/` — local setup and debug scripts (not tracked in this repo)
+Naming convention used throughout: RWM and MBPO-PPO refer to the first paper's method and policy optimizer; RWM-U and MOPO-PPO refer to the uncertainty-aware extension and its policy optimizer.
