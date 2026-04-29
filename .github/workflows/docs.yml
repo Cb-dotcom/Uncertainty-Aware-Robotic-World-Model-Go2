@@ -1,58 +1,51 @@
-site_name: Uncertainty-Aware Robotic World Model — Go2
+name: Deploy docs
 
-theme:
-  name: material
-  features:
-    - navigation.sections
-    - navigation.expand
-    - content.code.copy
-    - search.highlight
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
 
-nav:
-  - Home: index.md
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-  - Project:
-      - Overview: project/overview.md
-      - Repository Structure: project/repository-structure.md
-      - Current Status: project/current-status.md
-      - Roadmap: project/roadmap.md
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
-  - Setup:
-      - Local Environment: setup/local-environment.md
-      - Hardware and System Specs: setup/hardware-and-system-specs.md
-      - Lab Workstation Notes: setup/lab-workstation-notes.md
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  - Validation:
-      - Baseline Execution: validation/baseline-execution.md
-      - World-Model Pretraining Check: validation/world-model-pretraining-check.md
-      - Checkpoint and Finetune Status: validation/checkpoint-and-finetune-status.md
-      - Reproduction Status: validation/reproduction-status.md
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-  - Robotic World Model:
-      - Paper Analysis: world-model/paper-analysis.md
-      - Implementation Analysis: world-model/implementation-analysis.md
-      - Paper-to-Code Synthesis: world-model/paper-to-code-synthesis.md
-      - Task Modes: world-model/task-modes.md
-      - Runtime Pipeline: world-model/runtime-pipeline.md
+      - name: Install dependencies
+        run: pip install mkdocs-material
 
-  - Development:
-      - Submodules and Forks: development/submodules-and-forks.md
+      - name: Build site
+        run: mkdocs build --strict
 
-markdown_extensions:
-  - admonition
-  - attr_list
-  - md_in_html
-  - tables
-  - toc:
-      permalink: true
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.superfences
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.arithmatex:
-      generic: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
-extra_javascript:
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
