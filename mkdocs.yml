@@ -1,4 +1,5 @@
 site_name: Uncertainty-Aware Robotic World Model — Go2
+site_url: https://cb-dotcom.github.io/Uncertainty-Aware-Robotic-World-Model-Go2/
 
 theme:
   name: material
@@ -10,16 +11,32 @@ theme:
 
 nav:
   - Home: index.md
-  - Baseline: baseline.md
-  - Repo Map: repo-map.md
-  - Paper A:
-      - Task Modes: paper-a-task-modes.md
-      - Runtime Flow: paper-a-runtime-flow.md
-      - Loss Map: paper-a-loss-map.md
-  - Project meta:
-      - Roadmap: roadmap.md
-      - Portability: portability.md
-      - Repo Strategy: repo-strategy.md
+
+  - Project:
+      - Overview: project/overview.md
+      - Repository Structure: project/repository-structure.md
+      - Current Status: project/current-status.md
+      - Roadmap: project/roadmap.md
+
+  - Setup:
+      - Local Environment: setup/local-environment.md
+      - Hardware and System Specs: setup/hardware-and-system-specs.md
+
+  - Validation:
+      - Baseline Execution: validation/baseline-execution.md
+      - World-Model Pretraining Check: validation/world-model-pretraining-check.md
+      - Checkpoint and Finetune Status: validation/checkpoint-and-finetune-status.md
+      - Reproduction Status: validation/reproduction-status.md
+
+  - Robotic World Model:
+      - Task Modes: world-model/task-modes.md
+      - Runtime Pipeline: world-model/runtime-pipeline.md
+      - Paper Analysis: world-model/paper-analysis.md
+      - Implementation Analysis: world-model/implementation-analysis.md
+      - Paper-to-Code Synthesis: world-model/paper-to-code-synthesis.md
+
+  - Development:
+      - Submodules and Forks: development/submodules-and-forks.md
 
 markdown_extensions:
   - admonition
@@ -30,7 +47,11 @@ markdown_extensions:
       permalink: true
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.arithmatex:
@@ -39,3 +60,4 @@ markdown_extensions:
 extra_javascript:
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
