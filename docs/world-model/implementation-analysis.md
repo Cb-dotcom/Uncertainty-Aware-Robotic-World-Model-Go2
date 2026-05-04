@@ -59,19 +59,26 @@ It also defines a `system_dynamics` configuration block that controls the dynami
 
 ```python
 system_dynamics = RslRlSystemDynamicsCfg(
-    architecture_config={"type": "rnn", "rnn_type": "gru",
-                         "rnn_num_layers": 2, "rnn_hidden_size": 256},
-    state_head_config={"hidden_dims": [128]},
-    contact_head_config={"hidden_dims": [128]},
-    termination_head_config={"hidden_dims": [128]},
-    history_horizon=32,
-    system_dynamics_forecast_horizon=8,
     ensemble_size=1,
-    ...
+    history_horizon=32,
+    architecture_config={
+        "type": "rnn",
+        "rnn_type": "gru",
+        "rnn_num_layers": 2,
+        "rnn_hidden_size": 256,
+        "state_mean_shape": [128],
+        "state_logstd_shape": [128],
+        "extension_shape": [128],
+        "contact_shape": [128],
+        "termination_shape": [128],
+    },
+    freeze_auxiliary=False,
 )
 ```
 
-These values match the paper's reported configuration ($M = 32$, $N = 8$, GRU 256x256, MLP heads 128). The `ensemble_size = 1` collapses the ensemble to a single network; this is the structural hook reserved for the RWM-U extension and is documented in Section 8 below.
+The forecast horizon is not in `RslRlSystemDynamicsCfg`. It lives in the algorithm config (`RslRlMbrlPpoAlgorithmCfg`) as `system_dynamics_forecast_horizon = 8`. This split matters because the model config defines the recurrent architecture and history length, while the algorithm config defines how far the model is trained to predict during each dynamics update.
+
+These values are consistent with the paper-side configuration currently documented on the [paper analysis](paper-analysis.md) page ($M = 32$, $N = 8$, GRU hidden size 256, MLP heads 128), but the paper-side table values should still be rechecked against the PDF before final reproduction claims are made. The `ensemble_size = 1` collapses the ensemble to a single member; this is the structural hook reserved for the RWM-U extension and is documented in Section 8 below.
 
 The pretraining config also disables imagination:
 
@@ -84,15 +91,14 @@ In this stage the dynamics model is trained, but the policy is not rolled out th
 
 ## 4. System dynamics module
 
-`SystemDynamicsEnsemble` in `rsl_rl/modules/system_dynamics.py` is the world model. The "ensemble" naming reflects the design: the class supports an ensemble of $K$ networks indexed by member, and the active configuration uses $K = 1$.
+`SystemDynamicsEnsemble` in `rsl_rl/modules/system_dynamics.py` is the world-model module. The class supports ensemble-style prediction through multiple prediction heads. In the inspected implementation, the recurrent bases appear shared while the state and auxiliary heads are ensemble-indexed. The active configuration uses `ensemble_size = 1`, so only one prediction member is active.
 
-Each ensemble member contains:
+The module contains:
 
-- A recurrent base (`rnn.RNNBase` in the current config, which is a 2-layer GRU with hidden size 256).
-- A state prediction head (mean and standard deviation over the next observation).
-- A contact prediction head (logits for binary contact targets).
-- A termination prediction head (logits for binary termination targets).
-- An optional extension head (not active in the ANYmal-D pretraining config).
+- A recurrent state base (`rnn.RNNBase` in the current config, a 2-layer GRU with hidden size 256).
+- State prediction head(s), producing mean and standard deviation over the next system state.
+- Auxiliary prediction head(s), producing contact and termination logits.
+- An optional extension head path, not active in the current ANYmal-D pretraining config.
 
 ### 4.1 Recurrent base
 
@@ -153,6 +159,24 @@ At inference time, the logits pass through a sigmoid and are rounded to produce 
 
 The optional extension head is configured but not active in the ANYmal-D pretraining config (the corresponding `system_extension` observation group is not registered).
 
+### 4.5 Policy observation versus system state
+
+A major implementation detail is that the learned dynamics model does not directly predict the full policy observation. The local pretraining run showed five observation groups with the following shapes:
+
+```text
+policy              shape: (48,)
+system_state        shape: (45,)
+system_action       shape: (12,)
+system_contact      shape: (8,)
+system_termination  shape: (1,)
+```
+
+The policy network consumes the `policy` observation group. The dynamics model is trained on the `system_state` group together with `system_action`, `system_contact`, and `system_termination`.
+
+During imagination, the environment reconstructs the policy observation from the predicted system state plus the velocity command and the previous action. In the ANYmal-D imagination environment, the policy observation is rebuilt from predicted base linear velocity, base angular velocity, projected gravity, joint position, joint velocity, the commanded base velocity, and the previous action.
+
+This distinction matters for paper-to-code interpretation. The paper uses observation notation broadly, but the implementation separates the policy observation from the world-model state. The dynamics model does not directly predict every entry in the policy observation; the imagination environment is responsible for assembling the policy observation from predicted state and externally-provided command and action signals.
+
 ## 5. System dynamics loss
 
 The total system dynamics loss is computed inside `SystemDynamicsEnsemble.compute_loss(...)` and is assembled by the MBPO-PPO algorithm in `mbpo_ppo.py`. It is a weighted sum of seven terms:
@@ -180,7 +204,7 @@ The seven terms are not all active in the current configuration. Sections 5.1 th
 The state loss is computed via a regression helper in `system_dynamics.py`. The helper supports two modes:
 
 - `loss_type="mse"` (mean squared error against the target).
-- `loss_type="nll"` (Gaussian negative log-likelihood).
+- `loss_type="gaussian_nll"` (Gaussian negative log-likelihood).
 
 The active call path is:
 
@@ -188,7 +212,7 @@ The active call path is:
 loss = self.compute_regression_loss(predicted, target, loss_type="mse")
 ```
 
-with no override anywhere in the codebase that sets `loss_type="nll"`. This is an implementation finding worth flagging because the *architecture* predicts both a mean and a standard deviation (Section 4.2 and 4.3), which would be the natural input for an NLL loss. The current code samples from the predicted Gaussian and takes squared error against the target, which uses the std for variance scaling but not as a likelihood term.
+with no override anywhere in the codebase that sets `loss_type="gaussian_nll"`. This is an implementation finding worth flagging because the *architecture* predicts both a mean and a standard deviation (Section 4.2 and 4.3), which would be the natural input for an NLL loss. The current code samples from the predicted Gaussian and takes squared error against the target. The predicted standard deviation affects the sampled prediction, but this is not the same as likelihood-based variance weighting or uncertainty calibration.
 
 The result: the state loss is **sampled MSE**, not Gaussian NLL. The paper's Eq. 2 specifies $L_o$ abstractly as a discrepancy measure and does not commit to either form, but the architecture's prediction of a full Gaussian implies NLL would be the canonical choice. The codebase's sampled MSE is a reasonable proxy under reparameterization but is not the same loss.
 
@@ -238,7 +262,7 @@ The ANYmal-D pretraining config does not register a `system_extension` observati
 
 The contact loss is `nn.BCEWithLogitsLoss()` applied to the contact head's logits against binary contact targets. Targets come from the `system_contact` observation group registered in `flat_env_cfg.py`, which captures thigh and foot contacts (8 binary signals for ANYmal-D).
 
-This term is active and contributes meaningfully to training. The contact predictions are critical because the imagination reward function depends on contact patterns (feet air time, undesired contacts, foot clearance).
+This term is active and contributes meaningfully to training. The contact predictions are critical because the imagination reward function depends on contact patterns (feet air time, undesired contacts).
 
 ### 5.7 Termination loss
 
@@ -261,6 +285,34 @@ Summary of which terms contribute in the current ANYmal-D pretraining configurat
 | Termination | Active | BCE on base contact. |
 
 Of the seven configured loss terms, four are active (state, bound, contact, termination). This is a *Mapped* observation about the implementation; the paper does not specify which auxiliary terms should be present.
+
+### 5.9 Active reward terms
+
+The reward function used by the active ANYmal-D configuration is not defined from scratch in the project repository. It inherits from upstream Isaac Lab and applies a small set of project-specific modifications.
+
+The base reward set comes from `isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg.RewardsCfg`. The project's `flat_env_cfg.py` defines `RewardsCfg_TRAIN`, which extends the base and adds `stand_still`. The `AnymalDFlatEnvCfg.__post_init__` then overrides three weights inherited from the base.
+
+The 11 nonzero-weight reward terms in the `Pretrain-v0` and `Finetune-v0` tasks, with their effective weights and source, are:
+
+| Term | Effective weight | Source |
+|---|---:|---|
+| `track_lin_vel_xy_exp` | `+1.0` | inherited |
+| `track_ang_vel_z_exp` | `+0.5` | inherited |
+| `lin_vel_z_l2` | `-2.0` | inherited |
+| `ang_vel_xy_l2` | `-0.05` | inherited |
+| `dof_torques_l2` | `-2.5e-5` | inherited, overridden by project |
+| `dof_acc_l2` | `-2.5e-7` | inherited |
+| `action_rate_l2` | `-0.01` | inherited |
+| `feet_air_time` | `+0.5` | inherited, overridden by project |
+| `undesired_contacts` | `-1.0` | inherited |
+| `flat_orientation_l2` | `-5.0` | inherited (default 0.0), overridden by project |
+| `stand_still` | `-1.0` | added by project |
+
+`dof_pos_limits` is also inherited but has weight 0.0 and is not overridden, so it appears in the reward manager but does not contribute to the scalar reward.
+
+For the `Init-v0` baseline task, the project reverts the three flat-terrain overrides (`flat_orientation_l2 = 0.0`, `dof_torques_l2 = -1.0e-5`, `feet_air_time = 0.125`), so the baseline reward set is different from the pretrain/finetune reward set even though the task IDs share most other configuration.
+
+This inheritance-aware view is necessary for paper-to-code synthesis. The paper's reward formulation in Section A.1.2 should not be assumed to map term-for-term to the active code without verifying which terms are actually present in the env config.
 
 ## 6. Replay buffer
 
@@ -299,7 +351,7 @@ The codebase contains the structural hooks for the RWM-U extension, but they are
 
 ### 8.1 Ensemble support
 
-`SystemDynamicsEnsemble` accepts an `ensemble_size` parameter. With `ensemble_size > 1`, the module instantiates $K$ independent copies of the prediction heads sharing the GRU base. Each member has its own state, contact, and termination heads. The forward method returns predictions from all $K$ members.
+`SystemDynamicsEnsemble` accepts an `ensemble_size` parameter. With `ensemble_size > 1`, the module instantiates $K$ independent copies of the prediction heads sharing the GRU base. Each member has its own state, contact, and termination heads. The forward method returns predictions from all $K$ members. Epistemic uncertainty in this design therefore reflects disagreement across prediction heads, not disagreement across fully independent dynamics networks. If the RWM-U extension assumes fully independent ensemble members, this shared-base implementation becomes a key paper-to-code question.
 
 In the current configuration:
 
@@ -314,10 +366,10 @@ This collapses the ensemble to a single member. Epistemic uncertainty (defined a
 The custom MBRL env's `_post_imagination_step(...)` method includes a hook for an uncertainty penalty:
 
 ```python
-imagined_reward -= self.uncertainty_penalty_weight * epistemic_uncertainty * step_dt
+rewards += self.uncertainty_penalty_weight * epistemic_uncertainty * step_dt
 ```
 
-In the current configuration:
+With a negative `uncertainty_penalty_weight`, this becomes a penalty. In the current configuration:
 
 ```python
 uncertainty_penalty_weight = -0.0
@@ -345,9 +397,9 @@ The env owns:
 - An imagination action buffer (the corresponding action history).
 - References to the runner's dynamics model and normalizers (injected per Section 7).
 
-The env's `imagination_step(...)` method performs the prediction. The `_compute_imagination_reward_terms(...)` method reconstructs the reward function from the predicted state and contact signals. The reward terms are the ones documented in the [paper's Section A.1.2](paper-analysis.md#6-reward-formulation): velocity tracking, torque penalty, action rate, feet air time, undesired contacts, flat orientation, foot clearance, joint deviation.
+The env's `imagination_step(...)` method performs the prediction. The `_compute_imagination_reward_terms(...)` method reconstructs the reward function from the predicted state and contact signals. The active ANYmal-D reward configuration is documented in Section 5.9 below; it overlaps with the paper's Section A.1.2 reward formulation but should not be assumed identical without checking which terms are active in the current task.
 
-The reward reconstruction is a literal Python translation of the paper's reward equations applied to predicted observations rather than simulator-reported observations. This is the operational meaning of "the world model acts as a simulator": the env produces both states and reward signals from the learned model.
+The reward reconstruction applies the active Isaac Lab reward terms to predicted observations and predicted contact signals rather than simulator-reported observations. This is the operational meaning of "the world model acts as a simulator": the environment produces the state-like signals and reward inputs needed by PPO from the learned model. The active reward set overlaps with the paper's reward formulation, but term-by-term equivalence should be verified through the active environment config.
 
 ## 10. Checkpointing
 
@@ -411,7 +463,7 @@ The implementation analysis identifies the following findings, classified by cla
 
 - The dual-autoregressive training scheme is implemented in `system_dynamics.py` and the GRU base in `rnn.py`, matching the paper's $M = 32$, $N = 8$ configuration.
 - The MBPO-PPO algorithm is implemented in `mbpo_ppo.py` and orchestrated by `mbpo_on_policy_runner.py`, matching Algorithm 1 of the paper.
-- The reward reconstruction in `_compute_imagination_reward_terms(...)` matches the paper's Section A.1.2 reward equations.
+- The reward reconstruction in `_compute_imagination_reward_terms(...)` is consistent with the paper's Section A.1.2 reward formulation, but the active code-level reward set should be verified separately because the implementation inherits its reward terms from upstream Isaac Lab (see Section 5.9).
 
 **Discrepancy noted** (code diverges from paper in a documented way):
 

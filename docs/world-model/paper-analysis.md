@@ -4,6 +4,8 @@ This page is the paper-faithful description of *Robotic World Model: A Neural Ne
 
 The implementation as found in the upstream codebase is described separately on the [Implementation Analysis](implementation-analysis.md) page. The mapping between paper claims and code (including discrepancies) is on the [Paper-to-Code Synthesis](paper-to-code-synthesis.md) page. This page makes no claims about implementation; it describes only what the paper says.
 
+This page records the current reading of the paper. Exact figure and table values should be rechecked against the paper PDF before they are used as final reproduction targets.
+
 ## 1. Problem and motivation
 
 ### 1.1 The gap RWM addresses
@@ -207,7 +209,7 @@ Rewards in imagination are computed *from the imagined observations and predicte
 
 The paper emphasizes that MBPO-PPO optimizes policies over *roughly one hundred autoregressive steps* of imagination per iteration, far exceeding what existing methods (MBPO, Dreamer, TD-MPC) achieve. This is enabled directly by RWM's stability over long autoregressive rollouts. Without that stability, longer rollouts would accumulate enough prediction error to make the imagined trajectories useless for policy updates.
 
-The training parameters table (Table S11) confirms: 4096 imagination environments, 100 imagination steps per iteration, buffer size $|\mathcal{D}| = 1000$, KL target 0.01, clip range $\epsilon = 0.2$, discount $\gamma = 0.99$, 2500 total iterations.
+The paper's appendix reports the training parameters in Table S11: approximately 4096 imagination environments, 100 imagination steps per iteration, buffer size $|\mathcal{D}| = 1000$, KL target 0.01, clip range $\epsilon = 0.2$, discount $\gamma = 0.99$, 2500 total iterations. These exact numbers should be rechecked against the paper PDF.
 
 ### 4.4 Figure S7 in the paper
 
@@ -229,7 +231,7 @@ Figure 3b reports prediction error under Gaussian noise injection (six noise sca
 
 ### 5.2 Comparison across architectures
 
-Figure 4 reports autoregressive prediction error $e$ across diverse robotic environments (manipulation, quadruped locomotion, humanoid locomotion) for four model classes:
+The paper reports autoregressive prediction error $e$ across diverse robotic environments (manipulation, quadruped locomotion, humanoid locomotion) for four model classes:
 
 1. MLP baseline.
 2. RSSM (Recurrent State Space Model, the architecture used by Dreamer).
@@ -258,7 +260,7 @@ For hardware deployment: SHAC and Dreamer fail to produce a deployable policy du
 
 ### 5.4 Comparison against well-tuned model-free PPO
 
-Table 1 in the paper directly compares RWM+MBPO-PPO against a well-tuned PPO baseline trained on a high-fidelity simulator:
+The paper compares RWM+MBPO-PPO against a well-tuned PPO baseline trained on a high-fidelity simulator (Table 1 in the paper):
 
 | Method | State transitions | Total training time | Step inference | Real tracking reward |
 |---|---|---|---|---|

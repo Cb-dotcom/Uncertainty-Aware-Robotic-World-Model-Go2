@@ -33,51 +33,62 @@ The discrepancies are the higher-leverage findings of the analysis. They are sum
 | Imagined reward computation | §3.3, §A.1.2 | `_compute_imagination_reward_terms(...)` in `manager_based_mbrl_env.py` | Mapped |
 | Replay buffer $\mathcal{D}$ | §3.3 | `rsl_rl/storage/` | Mapped |
 | 100-step imagination rollout | §3.3, Table S11 | `imagination_step` loop, `num_imagination_steps_per_env = 24` (per-env) × 8192 envs | Partially mapped (per-env step count differs from paper's 100; the policy still sees long autoregressive chains but the runner config splits them across envs) |
+| Policy observation versus system state | Paper notation uses observation broadly | `policy` group, `system_state` group, and the imagination env's policy-observation reconstruction | Partially mapped: the dynamics model predicts `system_state`, while the policy observation is reconstructed from predicted state plus command and previous action |
 
-## 2. Reward terms (paper Section A.1.2)
+## 2. Reward terms
 
-The paper's reward equations are reconstructed inside the imagination loop from predicted state and contact signals. The code references below point to the term-by-term implementations in the imagination env's reward reconstruction.
+The paper defines a reward structure for the locomotion task in Section A.1.2. The implementation does not redefine these rewards from scratch; it inherits the standard Isaac Lab locomotion reward set from `velocity_env_cfg.RewardsCfg` and applies project-specific modifications. The active code-level reward set is therefore not identical to the paper's full reward table and should be tracked separately.
 
-| Reward term | Paper symbol | Mapping status |
-|---|---|---|
-| Linear velocity tracking $x, y$ | $r_{v_{xy}}$ | Mapped |
-| Angular velocity tracking $z$ | $r_{\omega_z}$ | Mapped |
-| Linear velocity penalty $z$ | $r_{v_z}$ | Mapped |
-| Angular velocity penalty $x, y$ | $r_{\omega_{xy}}$ | Mapped |
-| Joint torque penalty | $r_{q\tau}$ | Mapped |
-| Joint acceleration penalty | $r_{\ddot q}$ | Mapped |
-| Action rate penalty | $r_{\dot a}$ | Mapped |
-| Feet air time bonus | $r_{f_a}$ | Mapped |
-| Undesired contacts penalty | $r_c$ | Mapped |
-| Flat orientation penalty | $r_g$ | Mapped |
-| Foot clearance bonus | $r_{f_c}$ | Mapped |
-| Joint deviation penalty | $r_{q_d}$ | Mapped |
+The 11 reward terms active in the `Pretrain-v0` and `Finetune-v0` tasks, with their effective weights and source, are:
 
-All twelve reward terms are reconstructed from RWM predictions inside the imagination loop. The reconstruction is in `_compute_imagination_reward_terms(...)` in `anymal_d_manager_based_mbrl_env.py`. The corresponding equations are documented on the [Paper Analysis](paper-analysis.md#6-reward-formulation) page.
+| Active code reward term | Effective weight | Source | Status |
+|---|---:|---|---|
+| `track_lin_vel_xy_exp` | `+1.0` | inherited | mapped |
+| `track_ang_vel_z_exp` | `+0.5` | inherited | mapped |
+| `lin_vel_z_l2` | `-2.0` | inherited | mapped |
+| `ang_vel_xy_l2` | `-0.05` | inherited | mapped |
+| `dof_torques_l2` | `-2.5e-5` | inherited, overridden by project | mapped |
+| `dof_acc_l2` | `-2.5e-7` | inherited | mapped |
+| `action_rate_l2` | `-0.01` | inherited | mapped |
+| `feet_air_time` | `+0.5` | inherited, overridden by project | mapped |
+| `undesired_contacts` | `-1.0` | inherited | mapped |
+| `flat_orientation_l2` | `-5.0` | inherited (default 0.0), overridden by project | mapped |
+| `stand_still` | `-1.0` | added by project | active in code, paper correspondence to verify |
+
+`dof_pos_limits` is configured but inactive (weight 0.0). The `Init-v0` baseline task reverts the three flat-terrain overrides and therefore has different effective weights for `flat_orientation_l2`, `dof_torques_l2`, and `feet_air_time`.
+
+Reward terms listed in the paper that are not in this active code set should be treated as paper-level terms until their code activation is verified.
 
 ## 3. Training and architecture parameters
 
-| Parameter | Paper value | Code value (Pretrain-v0 config) | Match |
-|---|---|---|---|
-| History horizon $M$ | 32 | 32 | yes |
-| Forecast horizon $N$ | 8 | 8 | yes |
-| Forecast decay $\alpha$ | 1.0 | 1.0 (default) | yes |
-| Step time $\Delta t$ | 0.02 s | 0.02 s | yes |
-| Batch size | 1024 | 1024 (assumed) | yes |
-| Learning rate (RWM) | $10^{-4}$ | $10^{-4}$ (assumed) | yes |
-| Weight decay (RWM) | $10^{-5}$ | $10^{-5}$ (assumed) | yes |
-| Max iterations | 2500 | 2500 | yes |
-| GRU base | 256 × 256 | 256 × 256 | yes |
-| MLP heads | 128, ReLU | 128 | yes |
-| Imagination envs | 4096 (paper) | 8192 (code) | discrepancy in scale |
-| Imagination steps per iteration | 100 (paper) | 24 per env × 8192 envs | discrepancy in distribution across envs |
-| Buffer size $\lvert \mathcal{D} \rvert$ | 1000 | not yet verified against code | unverified |
-| Discount $\gamma$ | 0.99 | 0.99 | yes |
-| Clip range $\epsilon$ | 0.2 | 0.2 | yes |
-| Entropy coefficient | 0.005 | not yet verified against code | unverified |
-| Ensemble size | not specified by paper | 1 (Pretrain-v0), reserved for RWM-U | RWM context only |
+| Parameter | Paper value | Inspected code value | Status |
+|---|---:|---:|---|
+| History horizon $M$ | 32 | 32 | matched |
+| Forecast horizon $N$ | 8 | 8 | matched |
+| Forecast decay $\alpha$ | 1.0 | 1.0 (default) | matched |
+| Step time $\Delta t$ | 0.02 s | 0.02 s | matched |
+| GRU hidden size | 256 | 256 | matched |
+| GRU layers | 2 | 2 | matched |
+| State mean head | 128 | `[128]` | matched at architecture level |
+| State log-std head | 128 | `[128]` | matched at architecture level |
+| Contact head | 128 | `[128]` | matched at architecture level |
+| Termination head | 128 | `[128]` | matched at architecture level |
+| Ensemble size | to verify for base RWM | 1 | active code uses single member |
+| Policy learning rate | to verify | `1.0e-3` | code value verified, paper comparison pending |
+| System-dynamics learning rate | to verify | `1.0e-3` | code value verified, paper comparison pending |
+| System-dynamics weight decay | to verify | `0.0` | code value verified, paper comparison pending |
+| System-dynamics mini-batches | to verify | `20` | code value verified |
+| System-dynamics mini-batch size | to verify | `5000` | code value verified |
+| System-dynamics replay buffer size | to verify | `1000` | code value verified |
+| Pretrain max iterations | to verify | `2000` | code value verified |
+| Finetune imagination envs | 4096 | `8192` | code value verified, paper comparison pending |
+| Finetune imagination steps per env | 100 (per iteration in paper) | `24` (per env per iteration in code) | distribution-across-envs question, see §4.3 |
+| Discount $\gamma$ | 0.99 | `0.99` | matched |
+| PPO clip range $\epsilon$ | 0.2 | `0.2` | matched |
+| PPO mini-batches | to verify | `4` | code value verified |
+| Entropy coefficient | to verify | `0.005` | code value verified |
 
-The values marked "assumed" or "not yet verified" are taken from the existing implementation drafts and have not been re-checked against the current upstream config. They are correct to the best of our knowledge but should be confirmed during the next code read.
+Values marked "to verify" require the paper-side check before being confirmed as matched or noted as discrepancies. The paper values that *are* listed (history horizon, forecast horizon, GRU dimensions, discount, clip range, imagination envs) are taken from the paper analysis page and remain to be reconfirmed against the paper PDF.
 
 ## 4. Discrepancies
 
@@ -113,7 +124,9 @@ $$
 
 The two losses are related but not equivalent: under reparameterization, sampled MSE is a Monte Carlo estimator that uses the predicted std for sampling but does not penalize $\sigma_\phi$ in the same way NLL does. NLL drives the model to produce calibrated uncertainty (predicted std matches actual error magnitude); sampled MSE relies on the bound regularization term to keep std meaningful.
 
-The codebase has a helper that supports both modes (`compute_regression_loss(loss_type="mse" | "nll")`); the active call uses `loss_type="mse"`. Switching the configured mode would activate NLL training without further changes.
+The codebase has a helper that supports both modes (`compute_regression_loss(loss_type="mse" | "gaussian_nll")`); the active call uses `loss_type="mse"`. Switching the configured mode would activate NLL training without further changes.
+
+Under sampled MSE, the predicted standard deviation affects the sampled prediction. In expectation, this penalizes both mean error and large predicted variance, but it is not the same as Gaussian NLL and does not calibrate uncertainty in the same way.
 
 Status: **Discrepancy noted**. This is the most substantive of the four.
 
@@ -129,15 +142,15 @@ Status: **Partially mapped**. Worth resolving during the next code read by count
 
 The codebase contains the structural hooks for uncertainty-aware behavior:
 
-- `ensemble_size` parameter on `SystemDynamicsEnsemble` (default 1, currently 1).
-- `uncertainty_penalty_weight` field on the imagination env (default 0, currently 0 or -0.0).
-- A penalty term in the imagined reward computation: `imagined_reward -= uncertainty_penalty_weight * epistemic_uncertainty * step_dt`.
+- `ensemble_size` parameter on `SystemDynamicsEnsemble` (default 1, currently 1). With `ensemble_size > 1`, the implementation instantiates multiple prediction heads sharing the GRU recurrent base, so epistemic uncertainty in this design reflects disagreement across prediction heads rather than across fully independent dynamics networks.
+- `uncertainty_penalty_weight` field on the imagination env (default `-0.0`, currently `-0.0`).
+- A penalty term in the imagined reward computation: `rewards += uncertainty_penalty_weight * epistemic_uncertainty * step_dt`. With a negative weight this becomes a penalty.
 
-The paper introduces no uncertainty machinery. With `ensemble_size = 1`, epistemic uncertainty is structurally zero; with `uncertainty_penalty_weight = 0`, the penalty term contributes nothing.
+The paper introduces no uncertainty machinery. With `ensemble_size = 1`, epistemic uncertainty is structurally zero; with `uncertainty_penalty_weight = -0.0`, the penalty term contributes nothing either way.
 
-These hooks are the structural surface for the RWM-U extension (the second paper). The active configuration runs as RWM. Activating the hooks (`ensemble_size > 1`, `uncertainty_penalty_weight > 0`) is the path forward to the RWM-U + MOPO-PPO configuration.
+These hooks are the structural surface for the RWM-U extension (the second paper). The active configuration runs as RWM. Activating the hooks (`ensemble_size > 1`, `uncertainty_penalty_weight < 0`) is the path forward to the RWM-U + MOPO-PPO configuration. Whether the shared-base ensemble design is sufficient for RWM-U, or whether the second paper assumes fully independent ensemble members, is an open paper-to-code question to resolve during the RWM-U deep dive.
 
-Status: **Discrepancy noted**, with the framing that this is not a discrepancy from the RWM paper (which does not specify uncertainty handling) but a piece of the RWM-U paper present in the codebase but switched off. The same code path implements both methods, with config values selecting between them.
+Status: **Discrepancy / extension hook noted**, with the framing that this is not a discrepancy from the RWM paper (which does not specify uncertainty handling) but the visible surface of the RWM-U extension, switched off in the active base configuration.
 
 ## 5. Inactive loss components
 

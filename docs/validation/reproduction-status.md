@@ -18,7 +18,7 @@ What has been executed, on which hardware, with what outcome.
 | Trained dynamics model has useful predictive accuracy on held-out trajectories. | Not verified | Reduced-scale run was not configured for predictive performance. | Full pretrain plus held-out forecast evaluation. |
 | Imagination-based finetuning (`Finetune-v0`) runs end-to-end. | Not verified | Upstream config requires a pretrained dynamics checkpoint that does not exist locally. See [Checkpoint and Finetune Status](checkpoint-and-finetune-status.md). | Generate or obtain a valid dynamics checkpoint and a project-specific finetune config. |
 | MBPO-PPO produces a policy whose performance matches the paper's reported `0.90 ± 0.04` velocity-tracking reward. | Not verified | No finetuning has been run. | Finetune execution and benchmark evaluation. |
-| RWM-U + MOPO-PPO configuration (`ensemble_size > 1`, `uncertainty_penalty_weight > 0`) runs end-to-end. | Not verified | Path not yet exercised. The hooks exist in code but have not been activated. | Activate config, validate at reduced scale, then full scale. |
+| RWM-U + MOPO-PPO configuration (`ensemble_size > 1`, nonzero uncertainty penalty with the correct sign) runs end-to-end. | Not verified | Path not yet exercised. The hooks exist in code but have not been activated. | Activate config, validate at reduced scale, then full scale. |
 | Zero-shot deployment of trained policy on hardware. | Not verified | No trained policy has been deployed. | Trained MBPO-PPO policy plus hardware availability. |
 
 ## Mapping claims
@@ -32,7 +32,8 @@ What has been identified in the code as a counterpart to a paper claim.
 | Multi-step prediction loss (Eq. 2). | Partially mapped | [Synthesis §1](../world-model/paper-to-code-synthesis.md#1-method-components); discrepancy on $L_o$ form. |
 | MBPO-PPO algorithm (Algorithm 1). | Mapped | [Implementation Analysis §7](../world-model/implementation-analysis.md#7-model-based-runner). |
 | Imagined action selection (Eq. 3). | Mapped | [Implementation Analysis §9](../world-model/implementation-analysis.md#9-imagination-environment). |
-| Reward function (paper Section A.1.2, twelve terms). | Mapped | [Synthesis §2](../world-model/paper-to-code-synthesis.md#2-reward-terms-paper-section-a12). |
+| Reward function (paper Section A.1.2). | Partially mapped | [Synthesis §2](../world-model/paper-to-code-synthesis.md#2-reward-terms); 11 reward terms active in code (10 inherited from upstream Isaac Lab plus `stand_still` added by project), with three weights overridden by the project. The paper-to-code term-by-term correspondence remains to be verified. |
+| Policy observation versus system-state distinction. | Mapped | Local Pretrain-v0 run shows separate `policy` (48-dim) and `system_state` (45-dim) observation groups; the dynamics model predicts `system_state`, while the policy observation is reconstructed during imagination from predicted state, command, and previous action. See [Implementation Analysis §4.5](../world-model/implementation-analysis.md#45-policy-observation-versus-system-state). |
 | State mean predicted directly (paper does not specify) versus residual prediction (code). | Discrepancy noted | [Synthesis §4.1](../world-model/paper-to-code-synthesis.md#41-state-mean-predicted-as-a-residual). |
 | State loss as Gaussian NLL (architecturally implied) versus sampled MSE (active code). | Discrepancy noted | [Synthesis §4.2](../world-model/paper-to-code-synthesis.md#42-state-loss-is-sampled-mse-not-gaussian-nll). |
 | Imagination scale: 4096 envs × 100 steps per iteration (paper) versus 8192 envs × 24 steps (code). | Partially mapped | [Synthesis §4.3](../world-model/paper-to-code-synthesis.md#43-imagination-scale-differs-from-papers-stated-values). |
