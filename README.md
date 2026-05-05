@@ -31,14 +31,14 @@ The reported result is a 0.91 ± 0.03 normalized score on ANYmal-D from a fully 
 
 ### How the two papers compose
 
-The relationship between the two papers maps directly onto the codebase. The current upstream implementation already exposes uncertainty hooks (an `uncertainty_penalty_weight` in the imagination reward, an `ensemble_size` parameter on the dynamics model), but these are wired off in the validated configuration: `ensemble_size = 1` collapses the ensemble to a single network, and `uncertainty_penalty_weight = 0` removes the MOPO-style penalty term. In other words, the codebase as published implements Paper 1 in its active configuration but reserves the structural surface for the Paper 2 extension. Recognizing this is one of the higher-leverage findings of the paper-to-code analysis.
+The relationship between the two papers maps onto two separate pipelines in the upstream codebase. The manager-based pipeline (`scripts/reinforcement_learning/rsl_rl/`) implements online RWM with MBPO-PPO using Isaac Lab and `MBPOOnPolicyRunner`. The standalone pipeline (`scripts/reinforcement_learning/model_based/`) implements offline RWM-U with MOPO-PPO, loads a pretrained world model and a fixed dataset, and uses vanilla PPO without Isaac Lab. Both pipelines share backbone components (`SystemDynamicsEnsemble`, `ActorCritic`, the PPO algorithm) but have separate entry scripts, configs, environments, and runtime structure. The active configurations of the two pipelines select between the methods: the manager-based pipeline runs with `ensemble_size = 1` and `uncertainty_penalty_weight = -0.0` (base RWM); the standalone pipeline runs with `ensemble_size = 5` and `uncertainty_penalty_weight = -1.0` (RWM-U). Recognizing the two-pipeline structure is one of the higher-leverage findings of the paper-to-code analysis.
 
 ## Documentation
 
 The full project documentation is published at
 **[cb-dotcom.github.io/Uncertainty-Aware-Robotic-World-Model-Go2](https://cb-dotcom.github.io/Uncertainty-Aware-Robotic-World-Model-Go2/)**.
 
-It contains the project status, hardware and environment setup notes, validation results, the paper-to-code analysis, and the development roadmap.
+It contains the project status, hardware and environment setup notes, validation results, the paper-to-code analysis for both papers, and the development roadmap.
 
 ## Progress
 
@@ -47,11 +47,14 @@ It contains the project status, hardware and environment setup notes, validation
 - [x] Reduced-scale world-model pretraining executes end-to-end and produces a checkpoint.
       Full default configuration exceeds local GPU memory and is deferred to lab hardware.
 - [x] Task modes, runtime pipeline, and loss decomposition mapped at the code level.
-- [ ] Paper-to-code synthesis pages for both RWM and RWM-U completed.
+- [x] Paper-to-code synthesis pages for both RWM and RWM-U completed.
+- [x] Cross-paper relationship page (RWM ↔ RWM-U) completed.
+- [x] RWM-U offline pipeline executed end-to-end at reduced scale on local hardware.
+- [x] RWM-U Figure-3-style uncertainty-error evaluation and λ sweep performed at reduced scale.
 - [ ] Imagination-based finetuning executed locally with a usable pretrained checkpoint.
 - [ ] Full-scale pretraining on lab workstation, validated against Paper 1 prediction accuracy.
 - [ ] MBPO-PPO finetuning executed and benchmarked.
-- [ ] RWM-U + MOPO-PPO configuration activated and validated against Paper 2.
+- [ ] RWM-U + MOPO-PPO validated at paper scale on lab hardware.
 - [ ] ANYmal-D to Unitree Go2 embodiment transfer in simulation.
 - [ ] Go2 deployment on real hardware.
 - [ ] Research contribution direction identified.
@@ -83,6 +86,16 @@ The upstream codebases are tracked as Git submodules. Clone with:
 ```bash
 git clone --recurse-submodules https://github.com/Cb-dotcom/Uncertainty-Aware-Robotic-World-Model-Go2.git
 ```
+
+Note that the offline RWM-U pipeline ships its pretrained world model as a Git LFS object. After cloning, run:
+
+```bash
+cd upstream/robotic_world_model
+git lfs install
+git lfs pull
+```
+
+to materialize the actual model file (`assets/models/pretrain_rnn_ens.pt`, 25 MB).
 
 ## License and attribution
 

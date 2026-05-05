@@ -26,6 +26,7 @@ nav:
       - Baseline Execution: validation/baseline-execution.md
       - World-Model Pretraining Check: validation/world-model-pretraining-check.md
       - Checkpoint and Finetune Status: validation/checkpoint-and-finetune-status.md
+      - RWM-U Execution Check: validation/rwm-u-execution-check.md
       - Reproduction Status: validation/reproduction-status.md
 
   - Robotic World Model:
@@ -34,6 +35,12 @@ nav:
       - Paper Analysis: world-model/paper-analysis.md
       - Implementation Analysis: world-model/implementation-analysis.md
       - Paper-to-Code Synthesis: world-model/paper-to-code-synthesis.md
+      - Relationship to Uncertainty-Aware RWM: world-model/relationship-to-uncertainty-aware.md
+
+  - Uncertainty-Aware Robotic World Model:
+      - Paper Analysis: uncertainty-aware-world-model/paper-analysis.md
+      - Implementation Analysis: uncertainty-aware-world-model/implementation-analysis.md
+      - Paper-to-Code Synthesis: uncertainty-aware-world-model/paper-to-code-synthesis.md
 
   - Development:
       - Submodules and Forks: development/submodules-and-forks.md
