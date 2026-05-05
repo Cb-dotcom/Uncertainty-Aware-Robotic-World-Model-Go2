@@ -27,11 +27,12 @@ The discrepancies are the higher-leverage findings of the analysis. They are sum
 | Outer autoregression (predicted observations fed back over forecast horizon) | §3.2, Fig. 2a | Forecast loop in `system_dynamics.py` `compute_loss(...)` | Mapped |
 | Multi-step prediction loss (Eq. 2) | §3.2 | `compute_loss(...)` aggregation in `system_dynamics.py` | Partially mapped (discrepancy on $L_o$ form, see §4.2) |
 | Reparameterization trick | §3.2 | $\mu_\phi + \sigma_\phi \cdot \epsilon$ in MLP state head | Mapped |
-| Forecast decay $\alpha$ | §3.2, Eq. 2 | Per-step weighting in loss aggregation | Partially mapped (paper sets $\alpha = 1.0$, code path supports decay but config uses 1.0) |
+| Forecast decay $\alpha$ | §3.2, Eq. 2 | No corresponding parameter in config; loss aggregation uses uniform mean over forecast steps | Partially mapped: code's `torch.mean(...)` over forecast steps is equivalent to paper's $\alpha = 1.0$, but $\alpha$ is not a configurable hyperparameter in the implementation |
 | MBPO-PPO algorithm (Algorithm 1) | §3.3 | `mbpo_on_policy_runner.py` `learn(...)` | Mapped |
 | Imagined action selection (Eq. 3) | §3.3 | Policy invocation inside `imagination_step(...)` | Mapped |
 | Imagined reward computation | §3.3, §A.1.2 | `_compute_imagination_reward_terms(...)` in `manager_based_mbrl_env.py` | Mapped |
 | Replay buffer $\mathcal{D}$ | §3.3 | `rsl_rl/storage/` | Mapped |
+| Autoregressive evaluation under noise injection | §4.1, Fig. 3b | `evaluate_system_dynamics(...)` in `mbpo_ppo.py`, with `system_dynamics_eval_traj_noise_scale = [0.1, 0.2, 0.4, 0.5, 0.8]` | Mapped: the code rolls out 100 trajectories of length 400 and evaluates per-trajectory autoregressive prediction error at the noise scales reported in the paper's figure |
 | 100-step imagination rollout | §3.3, Table S11 | `imagination_step` loop, `num_imagination_steps_per_env = 24` (per-env) × 8192 envs | Partially mapped (per-env step count differs from paper's 100; the policy still sees long autoregressive chains but the runner config splits them across envs) |
 | Policy observation versus system state | Paper notation uses observation broadly | `policy` group, `system_state` group, and the imagination env's policy-observation reconstruction | Partially mapped: the dynamics model predicts `system_state`, while the policy observation is reconstructed from predicted state plus command and previous action |
 
@@ -65,7 +66,7 @@ Reward terms listed in the paper that are not in this active code set should be 
 |---|---:|---:|---|
 | History horizon $M$ | 32 | 32 | matched |
 | Forecast horizon $N$ | 8 | 8 | matched |
-| Forecast decay $\alpha$ | 1.0 | 1.0 (default) | matched |
+| Forecast decay $\alpha$ | 1.0 | not a configurable parameter; uniform mean over forecast steps | equivalent to $\alpha = 1.0$ |
 | Step time $\Delta t$ | 0.02 s | 0.02 s | matched |
 | GRU hidden size | 256 | 256 | matched |
 | GRU layers | 2 | 2 | matched |
@@ -86,7 +87,19 @@ Reward terms listed in the paper that are not in this active code set should be 
 | Discount $\gamma$ | 0.99 | `0.99` | matched |
 | PPO clip range $\epsilon$ | 0.2 | `0.2` | matched |
 | PPO mini-batches | to verify | `4` | code value verified |
+| PPO learning epochs | to verify | `5` | code value verified |
+| GAE $\lambda$ | to verify | `0.95` | code value verified |
+| KL target | to verify | `0.01` | code value verified |
+| Value loss coefficient | to verify | `1.0` | code value verified |
+| Max grad norm | to verify | `1.0` | code value verified |
+| LR schedule | to verify | `adaptive` | code value verified |
 | Entropy coefficient | to verify | `0.005` | code value verified |
+| System-dynamics warmup iterations (Pretrain-v0) | to verify | `0` | code value verified |
+| System-dynamics warmup iterations (Finetune-v0) | to verify | `500` | code value verified |
+| System-dynamics loss weights (state, sequence, bound, kl, extension, contact, termination) | to verify | `(1.0, 1.0, 1.0, 0.1, 1.0, 1.0, 1.0)` | code value verified |
+| System-dynamics eval trajectories | to verify | `100` | code value verified |
+| System-dynamics eval trajectory length | to verify | `400` | code value verified |
+| System-dynamics eval noise scales | `[0.0, 0.1, 0.2, 0.4, 0.5, 0.8]` (paper Fig. 3b) | `[0.1, 0.2, 0.4, 0.5, 0.8]` | code-side covers the nonzero noise levels reported in the paper figure |
 
 Values marked "to verify" require the paper-side check before being confirmed as matched or noted as discrepancies. The paper values that *are* listed (history horizon, forecast horizon, GRU dimensions, discount, clip range, imagination envs) are taken from the paper analysis page and remain to be reconfirmed against the paper PDF.
 
@@ -130,13 +143,13 @@ Under sampled MSE, the predicted standard deviation affects the sampled predicti
 
 Status: **Discrepancy noted**. This is the most substantive of the four.
 
-### 4.3 Imagination scale differs from paper's stated values
+### 4.3 Imagination scale uses different accounting than the paper
 
 Table S11 of the paper reports 4096 imagination environments and 100 imagination steps per iteration. The Finetune-v0 runner config uses 8192 imagination environments and 24 steps per environment per iteration.
 
-These do not contradict each other directly. The paper's "100 imagination steps per iteration" likely refers to the autoregressive chain length the model is rolled out for; the codebase's `num_imagination_steps_per_env = 24` may refer to a different dimension (steps per env per PPO update batch). Without instrumenting the active loop, the relationship is ambiguous.
+These two accountings cannot be compared directly without reading the imagination loop. The paper's "100 imagination steps per iteration" plausibly refers to the autoregressive chain length each imagined trajectory is rolled out for. The codebase's `num_imagination_steps_per_env = 24` is a per-env per-iteration count and may correspond to a different quantity (for example, steps per env per PPO update batch, with the autoregressive chain length determined elsewhere by `max_episode_length = 256`).
 
-Status: **Partially mapped**. Worth resolving during the next code read by counting actual autoregressive rollout lengths during a Finetune-v0 run.
+Status: **Partially mapped**. The values are unlikely to be in direct contradiction, but the mapping requires reading `imagination_step` and `learn(...)` to count actual autoregressive rollout lengths during a Finetune-v0 run. This is a Phase 2 verification task.
 
 ### 4.4 Uncertainty hooks present but inactive
 

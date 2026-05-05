@@ -314,6 +314,20 @@ For the `Init-v0` baseline task, the project reverts the three flat-terrain over
 
 This inheritance-aware view is necessary for paper-to-code synthesis. The paper's reward formulation in Section A.1.2 should not be assumed to map term-for-term to the active code without verifying which terms are actually present in the env config.
 
+### 5.10 Autoregressive evaluation procedure
+
+In addition to the training loss, the algorithm exposes an evaluation procedure for the dynamics model. `MBPOPPO.evaluate_system_dynamics(...)` rolls out the model autoregressively over a fixed-length window and reports the relative L1 prediction error against the corresponding ground-truth trajectory. The procedure is also run with several noise-injected versions of the input state and action trajectories.
+
+The configured evaluation parameters are:
+
+```python
+system_dynamics_num_eval_trajectories  = 100
+system_dynamics_len_eval_trajectory    = 400
+system_dynamics_eval_traj_noise_scale  = [0.1, 0.2, 0.4, 0.5, 0.8]
+```
+
+The noise scales align with the levels reported in the paper's Figure 3b (which uses the same scales plus a zero-noise baseline). The evaluation produces per-trajectory autoregressive errors that can be compared, in principle, against the paper's reported curves. This is a paper-to-code mapping for the *evaluation* protocol, separate from the training mapping.
+
 ## 6. Replay buffer
 
 The system dynamics replay buffer in `rsl_rl/storage/` stores sequences of observations and actions for world-model training. The buffer interface is consumed by `MBPOOnPolicyRunner.update_system_dynamics(...)`, which samples sequences of length $M + N$ from the buffer for each training mini-batch.
@@ -344,6 +358,8 @@ env.unwrapped.uncertainty_penalty_weight = ...
 ```
 
 This is the architectural bridge that lets the custom MBRL env reach into the runner's owned state to step imagined transitions. From an engineering standpoint it is unusual (the env reaches "up" into the runner), but it allows the imagination logic to live in the env class rather than the runner class.
+
+The runner config also includes a `system_dynamics_warmup_iterations` parameter that controls when policy updates begin relative to dynamics updates. In `Pretrain-v0` the value is `0` (policy and dynamics updates run from iteration 0). In `Finetune-v0` the value is `500`, meaning the first 500 finetune iterations only update the dynamics model from real-environment data; policy updates against imagined data begin only after the dynamics model has been re-warmed against the current data distribution. This is the mechanism that prevents the policy from being optimized against an under-trained imagination model at the start of finetuning.
 
 ## 8. Uncertainty hooks
 
