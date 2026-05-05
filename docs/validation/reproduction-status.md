@@ -37,7 +37,7 @@ What has been identified in the code as a counterpart to a paper claim.
 | Policy observation versus system-state distinction. | Mapped | Local Pretrain-v0 run shows separate `policy` (48-dim) and `system_state` (45-dim) observation groups; the dynamics model predicts `system_state`, while the policy observation is reconstructed during imagination from predicted state, command, and previous action. See [Implementation Analysis §4.5](../world-model/implementation-analysis.md#45-policy-observation-versus-system-state). |
 | State mean predicted directly (paper does not specify) versus residual prediction (code). | Discrepancy noted | [Synthesis §4.1](../world-model/paper-to-code-synthesis.md#41-state-mean-predicted-as-a-residual). |
 | State loss as Gaussian NLL (architecturally implied) versus sampled MSE (active code). | Discrepancy noted | [Synthesis §4.2](../world-model/paper-to-code-synthesis.md#42-state-loss-is-sampled-mse-not-gaussian-nll). |
-| Imagination scale: 4096 envs × 100 steps per iteration (paper) versus 8192 envs × 24 steps (code). | Partially mapped | [Synthesis §4.3](../world-model/paper-to-code-synthesis.md#43-imagination-scale-uses-different-accounting-than-the-paper). |
+| Imagination autoregressive horizon: 100 steps per iteration (paper) versus 24-step rollout (code). | Discrepancy in scale | [Synthesis §4.3](../world-model/paper-to-code-synthesis.md#43-imagination-autoregressive-horizon-is-shorter-than-the-paper). |
 | Uncertainty handling (RWM-U paper, not RWM paper) hooks present in code but switched off. | Discrepancy noted | [Synthesis §4.4](../world-model/paper-to-code-synthesis.md#44-uncertainty-hooks-present-but-inactive). |
 
 ## Notes

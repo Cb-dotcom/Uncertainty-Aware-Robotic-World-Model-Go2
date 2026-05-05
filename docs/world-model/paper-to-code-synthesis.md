@@ -33,7 +33,7 @@ The discrepancies are the higher-leverage findings of the analysis. They are sum
 | Imagined reward computation | §3.3, §A.1.2 | `_compute_imagination_reward_terms(...)` in `manager_based_mbrl_env.py` | Mapped |
 | Replay buffer $\mathcal{D}$ | §3.3 | `rsl_rl/storage/` | Mapped |
 | Autoregressive evaluation under noise injection | §4.1, Fig. 3b | `evaluate_system_dynamics(...)` in `mbpo_ppo.py`, with `system_dynamics_eval_traj_noise_scale = [0.1, 0.2, 0.4, 0.5, 0.8]` | Mapped: the code rolls out 100 trajectories of length 400 and evaluates per-trajectory autoregressive prediction error at the noise scales reported in the paper's figure |
-| 100-step imagination rollout | §3.3, Table S11 | `imagination_step` loop, `num_imagination_steps_per_env = 24` (per-env) × 8192 envs | Partially mapped (per-env step count differs from paper's 100; the policy still sees long autoregressive chains but the runner config splits them across envs) |
+| Imagination rollout (paper: 100 autoregressive steps per iteration) | §3.3, Table S11 | `imagine()` runs `for i in range(num_imagination_steps_per_env)` with `num_imagination_steps_per_env = 24`; 8192 imagination envs in parallel | Discrepancy in scale: code uses 24-step autoregressive horizon, paper reports 100. Documented in §4.3. |
 | Policy observation versus system state | Paper notation uses observation broadly | `policy` group, `system_state` group, and the imagination env's policy-observation reconstruction | Partially mapped: the dynamics model predicts `system_state`, while the policy observation is reconstructed from predicted state plus command and previous action |
 
 ## 2. Reward terms
@@ -143,13 +143,15 @@ Under sampled MSE, the predicted standard deviation affects the sampled predicti
 
 Status: **Discrepancy noted**. This is the most substantive of the four.
 
-### 4.3 Imagination scale uses different accounting than the paper
+### 4.3 Imagination autoregressive horizon is shorter than the paper
 
-Table S11 of the paper reports 4096 imagination environments and 100 imagination steps per iteration. The Finetune-v0 runner config uses 8192 imagination environments and 24 steps per environment per iteration.
+Table S11 of the paper reports 4096 imagination environments and 100 imagination steps per iteration. The Finetune-v0 runner config uses 8192 imagination environments and 24 autoregressive steps per imagination collection.
 
-These two accountings cannot be compared directly without reading the imagination loop. The paper's "100 imagination steps per iteration" plausibly refers to the autoregressive chain length each imagined trajectory is rolled out for. The codebase's `num_imagination_steps_per_env = 24` is a per-env per-iteration count and may correspond to a different quantity (for example, steps per env per PPO update batch, with the autoregressive chain length determined elsewhere by `max_episode_length = 256`).
+The accounting is now resolved: `num_imagination_steps_per_env = 24` is the literal length of the autoregressive rollout in the runner's `imagine()` loop. The policy is rolled forward through the world model for 24 steps per imagination collection, then PPO updates against that collection (5 learning epochs × 4 mini-batches = 20 gradient steps per collection). Imagination is performed once per outer training iteration, so over the full 2000-iteration training the cumulative autoregressive exposure is large, but any single PPO update batch sees trajectories of length 24, not 100.
 
-Status: **Partially mapped**. The values are unlikely to be in direct contradiction, but the mapping requires reading `imagination_step` and `learn(...)` to count actual autoregressive rollout lengths during a Finetune-v0 run. This is a Phase 2 verification task.
+The paper's reported 100 is therefore a longer per-iteration horizon than the code uses. This is unlikely to be a fundamental contradiction (the paper shows in Figure 3a that RWM remains accurate well past 24 steps, so a 24-step rollout is in the model's reliable range), but it is a real divergence in scale that should be tracked. Within the rollout, environments that hit predicted termination are reset by sampling fresh history windows from the system replay buffer, so the rollout effectively re-grounds in real data whenever the model predicts an episode end.
+
+Status: **Discrepancy noted in scale**. The horizons are different (24 in code vs 100 in the paper), but the values are not in direct contradiction; the code uses a shorter horizon than what the paper reports.
 
 ### 4.4 Uncertainty hooks present but inactive
 

@@ -102,11 +102,20 @@ The module contains:
 
 ### 4.1 Recurrent base
 
-`rnn.py` implements a GRU base that ingests observation-action pairs sequentially and produces a hidden representation. For the current configuration:
+`rnn.py` implements a GRU base that ingests observation-action pairs sequentially and produces a hidden representation. The `SystemDynamicsEnsemble.__init__` instantiates **two parallel GRU bases**, one for state predictions and one for auxiliary predictions:
+
+```python
+self.state_base = self._create_base()       # GRU for state head(s)
+self.auxiliary_base = self._create_base()   # GRU for contact and termination head(s)
+```
+
+Each base has its own parameters and is trained independently via the corresponding loss terms. The state base is updated by the state, sequence, bound, and KL losses; the auxiliary base is updated by the extension, contact, and termination losses.
+
+For the current configuration, each base is:
 
 - 2 stacked GRU layers, hidden size 256.
 - Inputs at each step are concatenated normalized observation and action.
-- Output at each step is the GRU hidden state, fed to the prediction heads.
+- Output at each step is the GRU hidden state, fed to the corresponding prediction head(s).
 
 The implementation supports both GRU and LSTM via the `rnn_type` parameter, but only GRU is active in the ANYmal-D config.
 
@@ -367,7 +376,26 @@ The codebase contains the structural hooks for the RWM-U extension, but they are
 
 ### 8.1 Ensemble support
 
-`SystemDynamicsEnsemble` accepts an `ensemble_size` parameter. With `ensemble_size > 1`, the module instantiates $K$ independent copies of the prediction heads sharing the GRU base. Each member has its own state, contact, and termination heads. The forward method returns predictions from all $K$ members. Epistemic uncertainty in this design therefore reflects disagreement across prediction heads, not disagreement across fully independent dynamics networks. If the RWM-U extension assumes fully independent ensemble members, this shared-base implementation becomes a key paper-to-code question.
+`SystemDynamicsEnsemble` accepts an `ensemble_size` parameter. The verified structure is:
+
+- A single `state_base` GRU shared across all $K$ state heads.
+- A single `auxiliary_base` GRU shared across all $K$ auxiliary heads.
+- $K$ independent state heads in `nn.ModuleList`.
+- $K$ independent auxiliary heads in `nn.ModuleList`.
+
+The forward method runs each base once, then iterates the $K$ heads on top of the shared base output, producing $K$ predictions per quantity. Epistemic uncertainty in this design therefore reflects disagreement across prediction heads, not disagreement across fully independent dynamics networks. If the RWM-U extension assumes fully independent ensemble members, this shared-base implementation becomes a key paper-to-code question.
+
+The forward method computes uncertainty signals as:
+
+```python
+aleatoric_uncertainty = state_stds.mean(dim=0).sum(dim=1)
+epistemic_uncertainty = (
+    state_means.std(dim=0).sum(dim=1) if self.ensemble_size > 1
+    else torch.zeros(output_state_means.shape[0], device=self.device)
+)
+```
+
+When `ensemble_size = 1`, epistemic uncertainty is **explicitly set to zero**, not computed. This is a hard zero, not a numerical artifact, so the imagination reward penalty term contributes exactly zero in the active configuration regardless of the value of `uncertainty_penalty_weight`.
 
 In the current configuration:
 
@@ -416,6 +444,32 @@ The env owns:
 The env's `imagination_step(...)` method performs the prediction. The `_compute_imagination_reward_terms(...)` method reconstructs the reward function from the predicted state and contact signals. The active ANYmal-D reward configuration is documented in Section 5.9 below; it overlaps with the paper's Section A.1.2 reward formulation but should not be assumed identical without checking which terms are active in the current task.
 
 The reward reconstruction applies the active Isaac Lab reward terms to predicted observations and predicted contact signals rather than simulator-reported observations. This is the operational meaning of "the world model acts as a simulator": the environment produces the state-like signals and reward inputs needed by PPO from the learned model. The active reward set overlaps with the paper's reward formulation, but term-by-term equivalence should be verified through the active environment config.
+
+### 9.1 Imagination loop length and reset mechanism
+
+The runner's `imagine()` method runs the autoregressive rollout for exactly `num_imagination_steps_per_env` iterations:
+
+```python
+for i in range(self.num_imagination_steps):
+    imagination_actions = self.alg.act(imagination_obs)
+    imagination_obs, imagination_rewards, imagination_dones, ..., \
+        self.state_history, self.action_history, uncertainty = \
+        self.env.unwrapped.imagination_step(imagination_actions, ...)
+```
+
+In the Finetune-v0 configuration, `num_imagination_steps_per_env = 24`, so each imagination collection produces a 24-step autoregressive rollout per imagination environment. This is the actual autoregressive horizon the policy is trained against during a single PPO update batch.
+
+Within the loop, when the termination prediction triggers a done signal for any imagined environment, the runner resamples a fresh history window from the system replay buffer to re-initialize that environment:
+
+```python
+if reset_env_ids is not empty:
+    imagination_state_history, imagination_action_history = \
+        next(self.alg.system_replay_buffer.mini_batch_generator(...))[:2]
+    self.state_history[reset_env_ids] = imagination_state_history[...]
+    self.action_history[reset_env_ids] = imagination_action_history[...]
+```
+
+This is the periodic re-grounding mechanism that prevents long-running imagined trajectories from drifting arbitrarily far from real data. Real-buffer windows reset the imagined state to a real starting point whenever the model predicts termination, and the rollout continues from there.
 
 ## 10. Checkpointing
 
