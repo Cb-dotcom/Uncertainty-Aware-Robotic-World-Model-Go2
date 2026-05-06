@@ -311,7 +311,7 @@ The active reward term weights for the offline ANYmal-D configuration, from `Env
 }
 ```
 
-This is the same set of 11 nonzero-weighted reward terms documented for the manager-based pipeline ([base RWM implementation analysis, Section 6](../world-model/implementation-analysis.md#6-reward-terms)), with `dof_pos_limits` configured but inactive (weight 0). Both pipelines use the same reward weights for ANYmal-D flat locomotion.
+This is the same set of 11 nonzero-weighted reward terms documented for the manager-based pipeline ([base RWM implementation analysis, Section 5.9](../world-model/implementation-analysis.md#59-active-reward-terms)), with `dof_pos_limits` configured but inactive (weight 0). Both pipelines use the same reward weights for ANYmal-D flat locomotion.
 
 ## 5. What the offline pipeline does not include
 

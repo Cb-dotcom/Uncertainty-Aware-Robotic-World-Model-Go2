@@ -21,6 +21,7 @@ nav:
   - Setup:
       - Local Environment: setup/local-environment.md
       - Hardware and System Specs: setup/hardware-and-system-specs.md
+      - Lab Workstation Notes: setup/lab-workstation-notes.md
 
   - Validation:
       - Baseline Execution: validation/baseline-execution.md
