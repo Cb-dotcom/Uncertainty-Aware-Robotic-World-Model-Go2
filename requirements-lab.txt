@@ -1,0 +1,11 @@
+# Project-specific Python deps installed inside the lab Docker container
+# on top of the base Isaac Sim/Lab image.
+# Install with: pip install -r requirements-lab.txt
+pandas
+matplotlib
+scipy
+wandb
+tensorboard
+hydra-core
+omegaconf
+rich
