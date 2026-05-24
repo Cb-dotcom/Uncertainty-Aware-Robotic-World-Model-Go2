@@ -15,6 +15,10 @@ REPO_URL="https://github.com/Cb-dotcom/Uncertainty-Aware-Robotic-World-Model-Go2
 REPO_DIR="Uncertainty-Aware-Robotic-World-Model-Go2"
 ISAAC_SIM_PIP="/isaac-sim/python.sh -m pip"
 
+# Required because omni.client lives in kit/extscore in the Isaac Sim 5.0 image,
+# but /isaac-sim/python.sh does not include it on sys.path by default.
+export PYTHONPATH="/isaac-sim/kit/extscore/omni.client.lib:${PYTHONPATH:-}"
+
 cd /workspace
 
 # ---------------------------------------------------------------------------
@@ -54,13 +58,15 @@ fi
 # ---------------------------------------------------------------------------
 # 3. Install Isaac Lab subpackages editably (from the submodule)
 # ---------------------------------------------------------------------------
+echo "==> Installing Isaac Lab compatibility dependencies"
+${ISAAC_SIM_PIP} install "setuptools<81" flatdict==4.0.1
+
 echo "==> Installing Isaac Lab subpackages (editable)"
 ${ISAAC_SIM_PIP} install -e upstream/IsaacLab/source/isaaclab
 ${ISAAC_SIM_PIP} install -e upstream/IsaacLab/source/isaaclab_assets
 ${ISAAC_SIM_PIP} install -e upstream/IsaacLab/source/isaaclab_rl
 ${ISAAC_SIM_PIP} install -e upstream/IsaacLab/source/isaaclab_tasks
 ${ISAAC_SIM_PIP} install -e upstream/IsaacLab/source/isaaclab_mimic
-${ISAAC_SIM_PIP} install -e upstream/IsaacLab/source/isaaclab_contrib
 
 # ---------------------------------------------------------------------------
 # 4. Install project-specific submodules editably
@@ -76,5 +82,4 @@ echo
 echo "==> Entry setup complete."
 echo
 echo "Repo location:    /workspace/${REPO_DIR}"
-echo "Next step:        bash /workspace/${REPO_DIR}/scripts/sanity-check.sh"
-echo "                  (or wherever you copy sanity-check.sh)"
+echo "Next step:        bash /workspace/${REPO_DIR}/lab/sanity-check.sh"
