@@ -43,6 +43,9 @@ nav:
       - Implementation Analysis: uncertainty-aware-world-model/implementation-analysis.md
       - Paper-to-Code Synthesis: uncertainty-aware-world-model/paper-to-code-synthesis.md
 
+  - Go2 Transfer:
+      - Inventory: go2-transfer/go2-inventory.md
+
   - Development:
       - Submodules and Forks: development/submodules-and-forks.md
 
