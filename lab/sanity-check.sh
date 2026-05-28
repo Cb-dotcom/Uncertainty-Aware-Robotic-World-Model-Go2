@@ -5,6 +5,13 @@
 #
 #   cd /workspace/Uncertainty-Aware-Robotic-World-Model-Go2
 #   bash lab/sanity-check.sh
+#
+# Important: do NOT add $RWM/source to PYTHONPATH.
+# The `mbrl` package is installed editably via PEP 660. Adding
+# $RWM/source to PYTHONPATH promotes source/mbrl/ to a namespace
+# package and shadows the editable finder. See:
+#   docs/setup/lab-workstation-notes.md
+#   docs/validation/phase-4a-lab-validation.md
 
 set -uo pipefail
 
@@ -13,7 +20,9 @@ PROJECT_ROOT="/workspace/Uncertainty-Aware-Robotic-World-Model-Go2"
 RWM="${PROJECT_ROOT}/upstream/robotic_world_model"
 RSL="${PROJECT_ROOT}/upstream/rsl_rl_rwm"
 
-export PYTHONPATH="/isaac-sim/kit/extscore/omni.client.lib:${RWM}/source:${RSL}:${PYTHONPATH:-}"
+# Strip any inherited PYTHONPATH that might include $RWM/source.
+unset PYTHONPATH
+export PYTHONPATH="/isaac-sim/kit/extscore/omni.client.lib:${RSL}"
 
 PASS=0
 FAIL=0
@@ -40,12 +49,13 @@ echo "Project root: ${PROJECT_ROOT}"
 echo "RWM:          ${RWM}"
 echo "RSL:          ${RSL}"
 echo "Python:       ${ISAAC_SIM_PYTHON}"
+echo "PYTHONPATH:   ${PYTHONPATH}"
 echo
 
 # ---------------------------------------------------------------------------
 # 1. nvidia-smi works
 # ---------------------------------------------------------------------------
-echo "[1/9] nvidia-smi"
+echo "[1/10] nvidia-smi"
 nvidia-smi > /tmp/nvidia-smi.out 2>&1
 check "nvidia-smi works inside container" $?
 head -20 /tmp/nvidia-smi.out | sed 's/^/    /'
@@ -54,7 +64,7 @@ echo
 # ---------------------------------------------------------------------------
 # 2. GPU visible to torch
 # ---------------------------------------------------------------------------
-echo "[2/9] torch sees GPU"
+echo "[2/10] torch sees GPU"
 $ISAAC_SIM_PYTHON - <<'PY'
 import torch
 assert torch.cuda.is_available(), "CUDA not available"
@@ -72,7 +82,7 @@ echo
 # ---------------------------------------------------------------------------
 # 3. Isaac Sim importable
 # ---------------------------------------------------------------------------
-echo "[3/9] isaacsim import"
+echo "[3/10] isaacsim import"
 $ISAAC_SIM_PYTHON - <<'PY'
 import isaacsim
 print("    isaacsim:", getattr(isaacsim, "__file__", ""))
@@ -83,7 +93,7 @@ echo
 # ---------------------------------------------------------------------------
 # 4. Isaac Lab base importable
 # ---------------------------------------------------------------------------
-echo "[4/9] isaaclab import"
+echo "[4/10] isaaclab import"
 $ISAAC_SIM_PYTHON - <<'PY'
 import isaaclab
 print("    isaaclab:", isaaclab.__file__)
@@ -94,7 +104,7 @@ echo
 # ---------------------------------------------------------------------------
 # 5. omni.client path available
 # ---------------------------------------------------------------------------
-echo "[5/9] omni.client import"
+echo "[5/10] omni.client import"
 $ISAAC_SIM_PYTHON - <<'PY'
 import omni.client
 print("    omni.client:", omni.client.__file__)
@@ -103,24 +113,43 @@ check "omni.client imports" $?
 echo
 
 # ---------------------------------------------------------------------------
-# 6. Project packages importable without forcing full Isaac asset import
+# 6. mbrl resolves to the inner package, not a namespace placeholder.
+#    With $RWM/source on PYTHONPATH, `import mbrl` succeeds but resolves
+#    to a namespace package at source/mbrl/, and mbrl.__file__ is None.
+#    That fools `import mbrl` while breaking any sub-package import.
 # ---------------------------------------------------------------------------
-echo "[6/9] project package imports"
+echo "[6/10] mbrl resolves to real package (not namespace)"
 $ISAAC_SIM_PYTHON - <<'PY'
-import rsl_rl
-print("    rsl_rl:", rsl_rl.__file__)
-
-# mbrl imports Isaac Lab modules, so this is the real project extension smoke test.
 import mbrl
-print("    mbrl:", mbrl.__file__)
+assert mbrl.__file__ is not None, (
+    "mbrl was found as a namespace package — its __file__ is None. "
+    "PYTHONPATH probably contains $RWM/source, which shadows the PEP 660 "
+    "editable install. Remove $RWM/source from PYTHONPATH."
+)
+print(f"    mbrl: {mbrl.__file__}")
+print(f"    mbrl.__path__: {list(mbrl.__path__)}")
+# Deeper smoke test — the nested mbrl.mbrl.envs path that train.py needs
+import mbrl.mbrl.envs.mdp  # noqa: F401
+print("    mbrl.mbrl.envs.mdp: import ok")
 PY
-check "mbrl and rsl_rl import" $?
+check "mbrl resolves to real package (not namespace)" $?
 echo
 
 # ---------------------------------------------------------------------------
-# 7. Data science extras importable
+# 7. rsl_rl importable
 # ---------------------------------------------------------------------------
-echo "[7/9] data science extras"
+echo "[7/10] rsl_rl import"
+$ISAAC_SIM_PYTHON - <<'PY'
+import rsl_rl
+print("    rsl_rl:", rsl_rl.__file__)
+PY
+check "rsl_rl imports" $?
+echo
+
+# ---------------------------------------------------------------------------
+# 8. Data science extras importable
+# ---------------------------------------------------------------------------
+echo "[8/10] data science extras"
 $ISAAC_SIM_PYTHON - <<'PY'
 import pandas, scipy, matplotlib, wandb, tensorboard, h5py, safetensors
 print(f"    pandas {pandas.__version__}, scipy {scipy.__version__}, matplotlib {matplotlib.__version__}")
@@ -130,9 +159,9 @@ check "data science extras importable" $?
 echo
 
 # ---------------------------------------------------------------------------
-# 8. Pretrained LFS checkpoint present
+# 9. Pretrained LFS checkpoint present
 # ---------------------------------------------------------------------------
-echo "[8/9] pretrained checkpoint and dataset"
+echo "[9/10] pretrained checkpoint and dataset"
 CKPT="${RWM}/assets/models/pretrain_rnn_ens.pt"
 DATA="${RWM}/assets/data/state_action_data_0.csv"
 
@@ -143,6 +172,8 @@ if [ -f "$CKPT" ]; then
         CKPT_OK=0
     else
         CKPT_OK=1
+        echo "    WARNING: checkpoint is suspiciously small — likely an LFS pointer."
+        echo "    Run: cd ${RWM} && git lfs pull"
     fi
 else
     echo "    missing checkpoint: $CKPT"
@@ -166,9 +197,9 @@ fi
 echo
 
 # ---------------------------------------------------------------------------
-# 9. RWM train entrypoint parses arguments
+# 10. RWM train entrypoint parses arguments
 # ---------------------------------------------------------------------------
-echo "[9/9] RWM train.py --help"
+echo "[10/10] RWM train.py --help"
 cd "$RWM"
 $ISAAC_SIM_PYTHON scripts/reinforcement_learning/rsl_rl/train.py --help > /tmp/rwm-train-help.out 2>&1
 HELP_STATUS=$?
