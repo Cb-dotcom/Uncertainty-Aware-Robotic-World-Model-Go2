@@ -113,24 +113,49 @@ check "omni.client imports" $?
 echo
 
 # ---------------------------------------------------------------------------
-# 6. mbrl resolves to the inner package, not a namespace placeholder.
-#    With $RWM/source on PYTHONPATH, `import mbrl` succeeds but resolves
-#    to a namespace package at source/mbrl/, and mbrl.__file__ is None.
-#    That fools `import mbrl` while breaking any sub-package import.
+# 6. mbrl resolves to a real package (the inner source/mbrl/mbrl/),
+#    not the outer source/mbrl/ as a namespace package.
+#
+#    We use importlib.util.find_spec rather than `import mbrl` because
+#    mbrl/__init__.py triggers isaaclab imports that require
+#    omni.physics, which is only available when SimulationApp is
+#    constructed. find_spec only resolves the import metadata; it does
+#    not execute __init__.py.
+#
+#    Namespace package indicator: spec.origin is None.
+#    Correct package indicator: spec.origin ends in source/mbrl/mbrl/__init__.py.
 # ---------------------------------------------------------------------------
 echo "[6/10] mbrl resolves to real package (not namespace)"
 $ISAAC_SIM_PYTHON - <<'PY'
-import mbrl
-assert mbrl.__file__ is not None, (
-    "mbrl was found as a namespace package — its __file__ is None. "
-    "PYTHONPATH probably contains $RWM/source, which shadows the PEP 660 "
-    "editable install. Remove $RWM/source from PYTHONPATH."
-)
-print(f"    mbrl: {mbrl.__file__}")
-print(f"    mbrl.__path__: {list(mbrl.__path__)}")
-# Deeper smoke test — the nested mbrl.mbrl.envs path that train.py needs
-import mbrl.mbrl.envs.mdp  # noqa: F401
-print("    mbrl.mbrl.envs.mdp: import ok")
+import importlib.util
+import sys
+
+spec = importlib.util.find_spec("mbrl")
+if spec is None:
+    print("    ERROR: mbrl not found by Python at all.")
+    sys.exit(1)
+
+print(f"    mbrl spec.origin:        {spec.origin}")
+print(f"    mbrl spec.submodule_search_locations: {list(spec.submodule_search_locations) if spec.submodule_search_locations else None}")
+
+# A correct PEP 660 editable install of mbrl has:
+#   spec.origin = '.../source/mbrl/mbrl/__init__.py'  (file path, not None)
+# A namespace-package shadow has:
+#   spec.origin = None
+#   spec.submodule_search_locations = ['.../source/mbrl']  (one entry, no __init__.py)
+if spec.origin is None:
+    print("    ERROR: mbrl was resolved as a namespace package (spec.origin is None).")
+    print("    PYTHONPATH likely contains $RWM/source, which shadows the PEP 660")
+    print("    editable install. Remove $RWM/source from PYTHONPATH.")
+    sys.exit(1)
+
+# Expect the origin to be inside source/mbrl/mbrl/
+if "source/mbrl/mbrl/__init__.py" not in spec.origin.replace("\\", "/"):
+    print(f"    ERROR: mbrl resolved to an unexpected location: {spec.origin}")
+    print("    Expected origin under source/mbrl/mbrl/__init__.py")
+    sys.exit(1)
+
+print("    mbrl resolves correctly to the editable install at source/mbrl/mbrl/")
 PY
 check "mbrl resolves to real package (not namespace)" $?
 echo
