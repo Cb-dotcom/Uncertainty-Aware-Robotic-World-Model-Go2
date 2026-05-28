@@ -92,7 +92,7 @@ Likely actuated joint count:
 12
 ```
 
-This still needs runtime confirmation from the articulation object.
+Confirmed at runtime (see "Runtime confirmation" section below).
 
 Initial pose
 From UNITREE_GO2_CFG:
@@ -253,3 +253,74 @@ Template-Isaac-Velocity-Flat-Unitree-Go2-Visualize-v0
 ```
 
 The first implementation should adapt from the RWM ANYmal-D config while importing Go2-specific values from Isaac Lab's existing Go2 config.
+
+---
+
+## Runtime confirmation (local laptop, tiny run)
+
+Status: confirmed on local laptop before Phase 4A lab work.
+
+A 1-iteration smoke test of the upstream Isaac Lab Go2 flat task was executed locally:
+
+```bash
+# On laptop, in repo root
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate env_isaaclab_src
+export ACCEPT_EULA=Y
+export OMNI_KIT_ACCEPT_EULA=YES
+export PRIVACY_CONSENT=Y
+
+cd upstream/IsaacLab
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
+    --task Isaac-Velocity-Flat-Unitree-Go2-v0 \
+    --num_envs 1 \
+    --max_iterations 1 \
+    --headless \
+    --logger tensorboard
+```
+
+Confirmed at runtime:
+
+- Task `Isaac-Velocity-Flat-Unitree-Go2-v0` registered and resolved
+- Go2 environment created without errors
+- `num_envs = 1`
+- Action shape: `(12,)`
+- Policy observation shape: `(48,)`
+- Actor: input `48`, output `12`
+- Critic: input `48`, output `1`
+- One full PPO iteration completed
+- Total timesteps: `24`
+
+Non-blocking warnings observed (also seen on workstation):
+
+- `isaaclab_contrib` extension.toml warning (extension does not exist in pinned IsaacLab)
+- Warp CUDA driver entry point warning
+- `obs_groups` policy/critic deprecation warning from `rsl_rl_rwm`
+- FabricManager mismatched-prototype command visualization warnings
+
+This confirms the Go2 articulation, action manager, and observation
+manager from upstream Isaac Lab work in our environment as shipped.
+It does not validate Go2 PPO learning (1 iteration is not learning); it
+validates the task plumbing.
+
+## Open items before scaffolding RWM Go2 config
+
+1. Confirm Go2 articulation joint *order* (not just names/count). Joint
+   ordering must match the action vector layout the policy emits.
+   Inspect the articulation at runtime to dump `joint_names` in their
+   actuator order.
+2. Confirm Go2 default joint position vector matches the regex-keyed
+   dict in `UNITREE_GO2_CFG` once resolved to concrete joints.
+3. Confirm Go2 `system_state` shape would be 45 (the ANYmal-D shape) for
+   the RWM dynamics head: 3 lin_vel + 3 ang_vel + 3 gravity + 12 joint_pos
+   + 12 joint_vel + 12 joint_torque. Identical to ANYmal-D if Go2 has
+   12 actuated joints (which it does). Reuse possible without reshaping
+   heads.
+4. Decide on Go2 reward weights for the RWM Init/Pretrain stages. The
+   ANYmal-D weights from the RWM repo and the upstream Go2 weights
+   diverge (e.g. `track_lin_vel_xy_exp` weight is 1.0 in RWM ANYmal-D
+   vs 1.5 in upstream Go2 flat). Start with the RWM ANYmal-D weights
+   to keep the world model and curriculum apples-to-apples, then tune.
+5. Decide whether to keep height_scanner-style observations or strip
+   them as the upstream Go2 *flat* config does. The RWM ANYmal-D *flat*
+   does not use a height scanner, so default to stripping it.
