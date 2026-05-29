@@ -48,7 +48,7 @@ from pathlib import Path
 import torch
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import Articulation, ArticulationCfg
+from isaaclab.assets import Articulation, ArticulationCfg, AssetBaseCfg
 from isaaclab.scene import InteractiveScene, InteractiveSceneCfg
 from isaaclab.utils import configclass
 
@@ -58,17 +58,23 @@ from isaaclab_assets.robots.unitree import UNITREE_GO2_CFG
 
 # ---------------------------------------------------------------------------
 # Minimal scene with ground + light + a single Go2.
+# Each non-articulation entity must be wrapped in an AssetBaseCfg with
+# its own prim path; InteractiveScene does not accept raw spawner cfgs.
 # ---------------------------------------------------------------------------
 @configclass
 class Go2InspectionSceneCfg(InteractiveSceneCfg):
     """Single Go2 on a flat ground plane."""
 
-    ground = sim_utils.GroundPlaneCfg()
-    light = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
+    ground = AssetBaseCfg(
+        prim_path="/World/ground",
+        spawn=sim_utils.GroundPlaneCfg(),
+    )
 
-    # Resolve the Go2 cfg into our scene. The prim path must use the
-    # standard env-regex namespace so InteractiveScene replicates it
-    # correctly (even though we only have 1 env here).
+    light = AssetBaseCfg(
+        prim_path="/World/Light",
+        spawn=sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75)),
+    )
+
     robot: ArticulationCfg = UNITREE_GO2_CFG.replace(
         prim_path="{ENV_REGEX_NS}/Robot"
     )
@@ -86,8 +92,10 @@ def regex_to_body_indices(body_names: list[str], pattern: str) -> list[int]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--out-dir",
         default=None,
@@ -134,11 +142,12 @@ def main() -> None:
     joint_vel_limits = data.joint_vel_limits[0].cpu().tolist()
     joint_effort_limits = data.joint_effort_limits[0].cpu().tolist()
 
-    # Body indices for the regex patterns in the upstream Go2 cfg
+    # Joint indices for the regex patterns in the upstream Go2 cfg
     hip_idx = regex_to_indices(joint_names, r".*_hip_joint")
     thigh_idx = regex_to_indices(joint_names, r".*_thigh_joint")
     calf_idx = regex_to_indices(joint_names, r".*_calf_joint")
 
+    # Body indices for the regex patterns in the upstream Go2 cfg
     foot_body_idx = regex_to_body_indices(body_names, r".*_foot")
     thigh_body_idx = regex_to_body_indices(body_names, r".*_thigh")
     calf_body_idx = regex_to_body_indices(body_names, r".*_calf")
