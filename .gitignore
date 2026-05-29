@@ -13,12 +13,9 @@
 # --------------------
 # Local setup/debug scripts (kept local, not tracked)
 # --------------------
-/scripts/
-/scripts/
+/scripts/*
 !/scripts/phase4a/
-!/scripts/phase4a/**
 !/scripts/phase4b/
-!/scripts/phase4b/**
 
 # --------------------
 # Logs and generated runtime outputs
