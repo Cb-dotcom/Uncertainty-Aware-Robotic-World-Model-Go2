@@ -182,3 +182,16 @@ class ObservationsCfg_PRETRAIN(ObservationsCfg):
 class UnitreeGo2FlatEnvCfg_PRETRAIN(UnitreeGo2FlatEnvCfg):
 
     observations: ObservationsCfg_PRETRAIN = ObservationsCfg_PRETRAIN()
+
+
+# ---------------------------------------------------------------------------
+# Baseline env — flat terrain, RWM-style rewards, ONLY the policy
+# observation group (no world-model groups). This is the comparison
+# baseline against which RWM/RWM-U are reported.
+# ---------------------------------------------------------------------------
+@configclass
+class UnitreeGo2FlatEnvCfg_BASELINE(UnitreeGo2FlatEnvCfg):
+    # No observation override — keep only the default 'policy' group from
+    # the parent ObservationsCfg. No system_* groups because there is no
+    # world model in the baseline.
+    pass

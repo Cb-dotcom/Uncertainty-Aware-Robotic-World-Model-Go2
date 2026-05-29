@@ -25,3 +25,16 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:UnitreeGo2FlatPPOPretrainRunnerCfg",
     },
 )
+
+# PPO baseline (no world model). Same flat env as Pretrain/Finetune,
+# RWM-paper-aligned PPO hyperparameters. This is the comparison
+# baseline against which RWM and RWM-U Go2 results are reported.
+gym.register(
+    id="Template-Isaac-Velocity-Flat-Unitree-Go2-Baseline-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.flat_env_cfg:UnitreeGo2FlatEnvCfg_BASELINE",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:UnitreeGo2FlatPPOBaselineRunnerCfg",
+    },
+)

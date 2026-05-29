@@ -15,6 +15,10 @@ from mbrl.rl.rsl_rl import (
 )
 
 
+# ---------------------------------------------------------------------------
+# Pretrain runner — MBPO-on-policy with world-model training.
+# Mirrors AnymalDFlatPPOPretrainRunnerCfg.
+# ---------------------------------------------------------------------------
 @configclass
 class UnitreeGo2FlatPPOPretrainRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
     class_name: str = "MBPOOnPolicyRunner"
@@ -109,4 +113,46 @@ class UnitreeGo2FlatPPOPretrainRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
 
     def __post_init__(self):
         super().__post_init__()
+        self.max_iterations = 2000
+
+
+# ---------------------------------------------------------------------------
+# Baseline runner — vanilla PPO (no world model). Mirrors RWM paper PPO
+# hyperparameters exactly. Used for fair PPO vs RWM vs RWM-U comparison.
+# ---------------------------------------------------------------------------
+@configclass
+class UnitreeGo2FlatPPOBaselineRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
+    # Standard on-policy PPO runner (not MBPO).
+    # No class_name override here -> uses parent's class (OnPolicyRunner).
+
+    experiment_name = "unitree_go2_flat"
+    run_name = "baseline"
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        # Match RWM paper PPO hyperparameters
+        # (algorithm sub-cfg lives on the parent runner cfg)
+        self.algorithm.value_loss_coef = 1.0
+        self.algorithm.use_clipped_value_loss = True
+        self.algorithm.clip_param = 0.2
+        self.algorithm.entropy_coef = 0.005
+        self.algorithm.num_learning_epochs = 5
+        self.algorithm.num_mini_batches = 4
+        self.algorithm.learning_rate = 1.0e-3
+        self.algorithm.schedule = "adaptive"
+        self.algorithm.gamma = 0.99
+        self.algorithm.lam = 0.95
+        self.algorithm.desired_kl = 0.01
+        self.algorithm.max_grad_norm = 1.0
+
+        # Policy network sized per RWM ANYmal-D
+        self.policy.init_noise_std = 1.0
+        self.policy.actor_hidden_dims = [128, 128, 128]
+        self.policy.critic_hidden_dims = [128, 128, 128]
+        self.policy.activation = "elu"
+
+        # Trajectory length and total iterations matching RWM paper
+        self.num_steps_per_env = 24
+        self.save_interval = 50
         self.max_iterations = 2000
