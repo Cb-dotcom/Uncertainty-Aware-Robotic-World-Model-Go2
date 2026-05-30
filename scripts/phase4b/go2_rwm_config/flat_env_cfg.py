@@ -36,7 +36,14 @@ class RewardsCfg_TRAIN(RewardsCfg):
 
 # ---------------------------------------------------------------------------
 # Base Flat env — mirror AnymalDFlatEnvCfg
-# Reuses RWM ANYmal-D reward weights as Phase 4B default (Open Item 4).
+#
+# Paper-faithful reward weights from RWM paper Table S6 (ANYmal-D column),
+# applied to Go2 as the closest morphological template (both are quadrupeds).
+# This explicitly overrides EVERY reward weight to avoid silent inheritance
+# from upstream Isaac Lab Go2 configs, which inflate tracking weights 1.5x
+# and drive PPO to a degenerate scoot policy.
+#
+# Reference: Li, Krause, Hutter, "Robotic World Model" (arXiv:2501.10100), Table S6.
 # ---------------------------------------------------------------------------
 @configclass
 class UnitreeGo2FlatEnvCfg(UnitreeGo2RoughEnvCfg):
@@ -47,10 +54,19 @@ class UnitreeGo2FlatEnvCfg(UnitreeGo2RoughEnvCfg):
         # post init of parent (Go2 rough env)
         super().__post_init__()
 
-        # Override RWM-tuned reward weights (carried over from ANYmal-D RWM)
-        self.rewards.flat_orientation_l2.weight = -5.0
-        self.rewards.dof_torques_l2.weight = -2.5e-5
-        self.rewards.feet_air_time.weight = 0.5
+        # Paper Table S6 (ANYmal-D column) — full explicit override.
+        # Do NOT rely on upstream Go2 defaults for any of these.
+        self.rewards.track_lin_vel_xy_exp.weight = 1.0      # paper w_vxy
+        self.rewards.track_ang_vel_z_exp.weight = 0.5       # paper w_ωz
+        self.rewards.lin_vel_z_l2.weight = -2.0             # paper w_vz
+        self.rewards.ang_vel_xy_l2.weight = -0.05           # paper w_ωxy
+        self.rewards.dof_torques_l2.weight = -2.5e-5        # paper w_qτ
+        self.rewards.dof_acc_l2.weight = -2.5e-7            # paper w_q̈
+        self.rewards.action_rate_l2.weight = -0.01          # paper w_ȧ
+        self.rewards.feet_air_time.weight = 0.5             # paper w_fa
+        self.rewards.flat_orientation_l2.weight = -5.0      # paper w_g
+        self.rewards.dof_pos_limits.weight = 0.0            # not in paper, off
+        self.rewards.stand_still.weight = -1.0              # paper w_c (collision proxy)
 
         # Flat terrain
         self.scene.terrain.terrain_type = "plane"
