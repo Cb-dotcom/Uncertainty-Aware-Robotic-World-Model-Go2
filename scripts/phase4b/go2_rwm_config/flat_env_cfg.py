@@ -64,6 +64,14 @@ class UnitreeGo2FlatEnvCfg(UnitreeGo2RoughEnvCfg):
         self.rewards.dof_acc_l2.weight = -2.5e-7            # paper w_q̈
         self.rewards.action_rate_l2.weight = -0.01          # paper w_ȧ
         self.rewards.feet_air_time.weight = 0.5             # paper w_fa
+        # Go2 morphology calibration: lower swing-time threshold from 0.5s
+        # (ANYmal-D default, ~50kg robot with slow natural cadence) to 0.25s,
+        # which is achievable for Go2 (~15kg, faster cadence) during velocity
+        # tracking. Without this, feet_air_time stays negative for any
+        # reasonable gait on Go2. Paper precedent: G1 had w_fa = 0.0 because
+        # the term was morphologically incompatible; our case is milder
+        # (recalibrate, not remove).
+        self.rewards.feet_air_time.params["threshold"] = 0.25
         self.rewards.flat_orientation_l2.weight = -5.0      # paper w_g
         self.rewards.dof_pos_limits.weight = 0.0            # not in paper, off
         self.rewards.stand_still.weight = -1.0              # paper w_c (collision proxy)
