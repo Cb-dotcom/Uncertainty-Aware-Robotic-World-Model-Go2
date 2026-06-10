@@ -156,3 +156,26 @@ class UnitreeGo2FlatPPOBaselineRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
         self.num_steps_per_env = 24
         self.save_interval = 50
         self.max_iterations = 2000
+
+# ---------------------------------------------------------------------------
+# Finetune runner — MBPO with imagination ON. Loads the Pretrain world model
+# + policy, warms the model, trains the policy on imagined rollouts.
+# Mirrors AnymalDFlatPPOFinetuneRunnerCfg.
+# ---------------------------------------------------------------------------
+@configclass
+class UnitreeGo2FlatPPOFinetuneRunnerCfg(UnitreeGo2FlatPPOPretrainRunnerCfg):
+    resume = True
+    load_system_dynamics = True
+    load_run = "FILL_AFTER_CLEAN_GO2_PRETRAIN"
+    system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/FILL_RUN/model_2000.pt"
+    system_dynamics_warmup_iterations = 100
+    run_name = "finetune"
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.imagination.num_envs = 8192
+        self.imagination.num_steps_per_env = 24
+        self.imagination.max_episode_length = 256
+        self.imagination.command_resample_interval_range = [100, 120]
+        self.imagination.uncertainty_penalty_weight = -0.0
+        # TODO: replace identity normalizer with Go2 rollout stats before serious runs

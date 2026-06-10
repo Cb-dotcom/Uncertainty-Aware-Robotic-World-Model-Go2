@@ -20,6 +20,8 @@ from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import (
 from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG  # isort: skip
 
 import mbrl.tasks.manager_based.locomotion.velocity.mdp as mdp
+from mbrl.mbrl.envs.mdp.commands import SampleUniformVelocityCommand
+from mbrl.mbrl.envs.mdp.commands import SampleUniformVelocityCommand
 
 
 # ---------------------------------------------------------------------------
@@ -219,3 +221,30 @@ class UnitreeGo2FlatEnvCfg_BASELINE(UnitreeGo2FlatEnvCfg):
     # the parent ObservationsCfg. No system_* groups because there is no
     # world model in the baseline.
     pass
+
+# ---------------------------------------------------------------------------
+# Finetune env — mirror AnymalDFlatEnvCfg_FINETUNE: small real-env scene (10)
+# + uniform commands; bulk of training is the 8192 imagined envs (runner cfg).
+# ---------------------------------------------------------------------------
+@configclass
+class UnitreeGo2FlatEnvCfg_FINETUNE(UnitreeGo2FlatEnvCfg_PRETRAIN):
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.num_envs = 10
+        self.scene.env_spacing = 2.5
+        self.observations.policy.enable_corruption = False
+        self.commands.base_velocity.class_type = SampleUniformVelocityCommand
+
+
+# ---------------------------------------------------------------------------
+# Finetune env — mirror AnymalDFlatEnvCfg_FINETUNE: small real-env scene (10)
+# + uniform commands; bulk of training is the 8192 imagined envs (runner cfg).
+# ---------------------------------------------------------------------------
+@configclass
+class UnitreeGo2FlatEnvCfg_FINETUNE(UnitreeGo2FlatEnvCfg_PRETRAIN):
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.num_envs = 10
+        self.scene.env_spacing = 2.5
+        self.observations.policy.enable_corruption = False
+        self.commands.base_velocity.class_type = SampleUniformVelocityCommand
