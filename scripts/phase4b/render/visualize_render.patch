@@ -1,0 +1,21 @@
+--- a/scripts/reinforcement_learning/rsl_rl/visualize.py
++++ b/scripts/reinforcement_learning/rsl_rl/visualize.py
+@@
+-# headless: from omni.kit.viewport.menubar.lighting.actions import _set_lighting_mode
+-# headless: _set_lighting_mode("Grey Studio") # Colored Lights
++if not args_cli.headless:
++    from omni.kit.viewport.menubar.lighting.actions import _set_lighting_mode
++    _set_lighting_mode("Grey Studio")  # Colored Lights
+@@
+-    env_cfg.commands.base_velocity.heading_command = False; env_cfg.commands.base_velocity.ranges.lin_vel_x = (0.45, 0.45); env_cfg.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0); env_cfg.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
+-    env_cfg.viewer.origin_type = "asset_root"; env_cfg.viewer.asset_name = "robot"; env_cfg.viewer.env_index = 0; env_cfg.viewer.eye = (-1.35, 1.05, 0.65); env_cfg.viewer.lookat = (0.0, 0.0, 0.20)
++    # --- render pins: forward command + follow-cam (shared across robots) ---
++    env_cfg.commands.base_velocity.heading_command = False
++    env_cfg.commands.base_velocity.ranges.lin_vel_x = (0.45, 0.45)
++    env_cfg.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
++    env_cfg.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
++    env_cfg.viewer.origin_type = "asset_root"
++    env_cfg.viewer.asset_name = "robot"
++    env_cfg.viewer.env_index = 0
++    env_cfg.viewer.eye = (-1.35, 1.05, 0.65)
++    env_cfg.viewer.lookat = (0.0, 0.0, 0.20)

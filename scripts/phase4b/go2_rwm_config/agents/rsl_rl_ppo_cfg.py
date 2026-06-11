@@ -179,3 +179,9 @@ class UnitreeGo2FlatPPOFinetuneRunnerCfg(UnitreeGo2FlatPPOPretrainRunnerCfg):
         self.imagination.command_resample_interval_range = [100, 120]
         self.imagination.uncertainty_penalty_weight = -0.0
         # Normalizer kept identity on purpose: matches the Pretrain world model (trained with identity). Recompute ONLY with a fresh Pretrain.
+@configclass
+class UnitreeGo2FlatPPOVisualizeRunnerCfg(UnitreeGo2FlatPPOPretrainRunnerCfg):
+    resume = True
+    load_system_dynamics = True
+    system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/2026-06-11_12-35-49_pretrain/model_2000.pt"
+    run_name = "visualize"

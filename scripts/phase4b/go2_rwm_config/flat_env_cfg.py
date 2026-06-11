@@ -20,7 +20,7 @@ from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import (
 from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG  # isort: skip
 
 import mbrl.tasks.manager_based.locomotion.velocity.mdp as mdp
-from mbrl.mbrl.envs.mdp.commands import SampleUniformVelocityCommand
+from mbrl.mbrl.envs.mdp.commands import UniformVelocityCommand_Visualize, SampleUniformVelocityCommand
 
 
 # ---------------------------------------------------------------------------
@@ -249,3 +249,35 @@ class UnitreeGo2FlatEnvCfg_FINETUNE(UnitreeGo2FlatEnvCfg_PRETRAIN):
         self.scene.env_spacing = 2.5
         self.observations.policy.enable_corruption = False
         self.commands.base_velocity.class_type = SampleUniformVelocityCommand
+
+@configclass
+class UnitreeGo2FlatEnvCfg_VISUALIZE(UnitreeGo2FlatEnvCfg_PRETRAIN):
+
+    def __post_init__(self):
+        # post init of parent
+        super().__post_init__()
+        # make a smaller scene for visualize
+        self.scene.num_envs = 10
+        self.scene.env_spacing = 2.5
+        # disable randomization for visualize
+        self.observations.policy.enable_corruption = False
+        # remove random pushing event
+        self.events.base_external_force_torque = None
+        self.events.push_robot = None
+        # override commands
+        self.commands.base_velocity.class_type = UniformVelocityCommand_Visualize
+        self.commands.base_velocity.resampling_time_range = (2.0, 2.0)
+        # override randomization
+        self.events.reset_base.func = mdp.reset_root_state_uniform_visualize
+        self.events.reset_base.params = {
+            "pose_range": {"x": (-0.0, 0.0), "y": (-0.0, 0.0), "yaw": (1.57, 1.57)},
+            "velocity_range": {
+                "x": (-0.0, 0.0),
+                "y": (-0.0, 0.0),
+                "z": (-0.0, 0.0),
+                "roll": (-0.0, 0.0),
+                "pitch": (-0.0, 0.0),
+                "yaw": (-0.0, 0.0),
+            },
+        }
+        self.events.reset_robot_joints.func = mdp.reset_joints_by_scale_visualize
