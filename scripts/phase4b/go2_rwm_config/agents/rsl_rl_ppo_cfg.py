@@ -166,8 +166,8 @@ class UnitreeGo2FlatPPOBaselineRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
 class UnitreeGo2FlatPPOFinetuneRunnerCfg(UnitreeGo2FlatPPOPretrainRunnerCfg):
     resume = True
     load_system_dynamics = True
-    load_run = "FILL_AFTER_CLEAN_GO2_PRETRAIN"
-    system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/FILL_RUN/model_2000.pt"
+    load_run = "2026-05-29_20-48-46_pretrain"
+    system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/2026-05-29_20-48-46_pretrain/model_2000.pt"
     system_dynamics_warmup_iterations = 100
     run_name = "finetune"
 
@@ -178,4 +178,4 @@ class UnitreeGo2FlatPPOFinetuneRunnerCfg(UnitreeGo2FlatPPOPretrainRunnerCfg):
         self.imagination.max_episode_length = 256
         self.imagination.command_resample_interval_range = [100, 120]
         self.imagination.uncertainty_penalty_weight = -0.0
-        # TODO: replace identity normalizer with Go2 rollout stats before serious runs
+        # Normalizer kept identity on purpose: matches the Pretrain world model (trained with identity). Recompute ONLY with a fresh Pretrain.
