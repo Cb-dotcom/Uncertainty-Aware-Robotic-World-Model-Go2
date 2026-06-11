@@ -205,6 +205,12 @@ class ObservationsCfg_PRETRAIN(ObservationsCfg):
 # ---------------------------------------------------------------------------
 @configclass
 class UnitreeGo2FlatEnvCfg_PRETRAIN(UnitreeGo2FlatEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        # Go2 reward fix: match stock Isaac Lab Go2 flat reward tuning.
+        self.rewards.feet_air_time.weight = 0.25
+        self.rewards.flat_orientation_l2.weight = -2.5
+
 
     observations: ObservationsCfg_PRETRAIN = ObservationsCfg_PRETRAIN()
 
@@ -216,6 +222,12 @@ class UnitreeGo2FlatEnvCfg_PRETRAIN(UnitreeGo2FlatEnvCfg):
 # ---------------------------------------------------------------------------
 @configclass
 class UnitreeGo2FlatEnvCfg_BASELINE(UnitreeGo2FlatEnvCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        # Go2 reward fix: match stock Isaac Lab Go2 flat reward tuning.
+        self.rewards.feet_air_time.weight = 0.25
+        self.rewards.flat_orientation_l2.weight = -2.5
+
     # No observation override — keep only the default 'policy' group from
     # the parent ObservationsCfg. No system_* groups because there is no
     # world model in the baseline.
@@ -229,6 +241,10 @@ class UnitreeGo2FlatEnvCfg_BASELINE(UnitreeGo2FlatEnvCfg):
 class UnitreeGo2FlatEnvCfg_FINETUNE(UnitreeGo2FlatEnvCfg_PRETRAIN):
     def __post_init__(self):
         super().__post_init__()
+
+        # Go2 reward fix: match stock Isaac Lab Go2 flat reward tuning.
+        self.rewards.feet_air_time.weight = 0.25
+        self.rewards.flat_orientation_l2.weight = -2.5
         self.scene.num_envs = 10
         self.scene.env_spacing = 2.5
         self.observations.policy.enable_corruption = False
