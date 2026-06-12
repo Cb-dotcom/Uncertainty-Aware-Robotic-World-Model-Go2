@@ -24,7 +24,7 @@ class UnitreeGo2FlatPPOPretrainRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
     class_name: str = "MBPOOnPolicyRunner"
 
     system_dynamics = RslRlSystemDynamicsCfg(
-        ensemble_size=1,
+        ensemble_size=5,
         history_horizon=32,
         architecture_config={
             "type": "rnn",
@@ -93,7 +93,7 @@ class UnitreeGo2FlatPPOPretrainRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
         system_dynamics_eval_traj_noise_scale=[0.1, 0.2, 0.4, 0.5, 0.8],
     )
 
-    run_name = "pretrain"
+    run_name = "pretrain_ens5"
     load_system_dynamics = False
     system_dynamics_load_path = None
     system_dynamics_warmup_iterations = 0

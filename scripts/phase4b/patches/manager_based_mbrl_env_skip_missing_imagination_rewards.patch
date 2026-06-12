@@ -1,0 +1,8 @@
+diff --git a/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py b/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py
+--- a/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py
++++ b/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py
+@@
+-            term_value = self.imagination_reward_per_step[term]
++            if term not in self.imagination_reward_per_step:
++                continue
++            term_value = self.imagination_reward_per_step[term]
