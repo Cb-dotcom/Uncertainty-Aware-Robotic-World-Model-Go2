@@ -20,6 +20,7 @@ from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import (
 from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG  # isort: skip
 
 import mbrl.tasks.manager_based.locomotion.velocity.mdp as mdp
+from isaaclab_tasks.manager_based.locomotion.velocity.mdp import feet_slide as isaac_feet_slide
 from mbrl.mbrl.envs.mdp.commands import UniformVelocityCommand_Visualize, SampleUniformVelocityCommand
 
 
@@ -32,6 +33,14 @@ class RewardsCfg_TRAIN(RewardsCfg):
         func=mdp.joint_pos_stand_still,
         weight=-1.0,
         params={"command_name": "base_velocity", "threshold": 0.05},
+    )
+    feet_slide = RewTerm(
+        func=isaac_feet_slide,
+        weight=-0.25,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
+        },
     )
 
 
