@@ -166,8 +166,8 @@ class UnitreeGo2FlatPPOBaselineRunnerCfg(UnitreeGo2FlatPPORunnerCfg):
 class UnitreeGo2FlatPPOFinetuneRunnerCfg(UnitreeGo2FlatPPOPretrainRunnerCfg):
     resume = True
     load_system_dynamics = True
-    load_run = "2026-05-29_20-48-46_pretrain"
-    system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/2026-05-29_20-48-46_pretrain/model_2000.pt"
+    load_run = "2026-06-12_09-07-38_pretrain"
+    system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/2026-06-12_09-07-38_pretrain/model_2000.pt"
     system_dynamics_warmup_iterations = 100
     run_name = "finetune"
 
