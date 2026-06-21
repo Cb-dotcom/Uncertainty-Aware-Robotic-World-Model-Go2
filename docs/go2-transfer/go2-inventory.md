@@ -1,6 +1,8 @@
 # Go2 Transfer Inventory
 
-This document tracks the initial Unitree Go2 inventory for transferring the RWM/RWM-U pipeline from ANYmal-D to Go2.
+This document tracks the Unitree Go2 inventory used to transfer the RWM / RWM-U pipeline from ANYmal-D to Go2.
+
+The purpose of this file is to record the durable robot/task facts: asset locations, joint/body layout, actuator values, observation layout, reward/task differences, and the transfer implications for RWM.
 
 ## Current source of truth
 
@@ -10,421 +12,509 @@ Relevant upstream Isaac Lab files:
 
 ```text
 upstream/IsaacLab/source/isaaclab_assets/isaaclab_assets/robots/unitree.py
+upstream/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/
 upstream/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/flat_env_cfg.py
 upstream/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/rough_env_cfg.py
 upstream/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/agents/rsl_rl_ppo_cfg.py
 ```
 
-Existing Isaac Lab tasks:
+Relevant RWM Go2 source-of-truth files:
 
 ```text
-Isaac-Velocity-Flat-Unitree-Go2-v0
-Isaac-Velocity-Flat-Unitree-Go2-Play-v0
-Isaac-Velocity-Rough-Unitree-Go2-v0
-Isaac-Velocity-Rough-Unitree-Go2-Play-v0
+scripts/phase4b/go2_rwm_config/
+scripts/phase4b/go2_rwm_config/agents/rsl_rl_ppo_cfg.py
+scripts/phase4b/install_go2_config.py
+upstream/robotic_world_model/source/mbrl/mbrl/tasks/manager_based/locomotion/velocity/config/go2/
 ```
 
-Asset configuration
-Isaac Lab defines:
+Note: this section records the pinned upstream Isaac Lab Go2 inventory. Working-tree control edits, including the Phase 4C `feet_slide = -0.25` reward patch, are tracked separately in the Phase 4C / Submodules and Forks notes.
 
-```python
-UNITREE_GO2_CFG
-```
+## Robot asset inventory
 
-in:
+The Go2 robot configuration is defined in Isaac Lab's `unitree.py`.
+
+Runtime-confirmed durable facts:
+
+| Item | Go2 value |
+|---|---|
+| Robot | Unitree Go2 |
+| Initial base height | `0.4` |
+| Actuated joints | 12 |
+| Body count | 19 |
+| Passive/non-actuated head links | `Head_upper`, `Head_lower` |
+| Default actuator effort limit | `23.5` |
+| Default actuator stiffness | `25.0` |
+| Default actuator damping | `0.5` |
+
+The 19 bodies consist of the base/trunk, four leg chains, four feet, and the two passive head links. The passive head links are present in the USD/body tree but are not actuated joints.
+
+## Joint order
+
+The Go2 joint order is grouped by joint type, with leg order `FL`, `FR`, `RL`, `RR` inside each group.
+
+Runtime-confirmed order:
 
 ```text
-upstream/IsaacLab/source/isaaclab_assets/isaaclab_assets/robots/unitree.py
+FL_hip_joint
+FR_hip_joint
+RL_hip_joint
+RR_hip_joint
+FL_thigh_joint
+FR_thigh_joint
+RL_thigh_joint
+RR_thigh_joint
+FL_calf_joint
+FR_calf_joint
+RL_calf_joint
+RR_calf_joint
 ```
 
-The Go2 USD path is:
-
-```python
-f"{ISAACLAB_NUCLEUS_DIR}/Robots/Unitree/Go2/go2.usd"
-```
-
-Contact sensors are enabled:
-
-```python
-activate_contact_sensors=True
-```
-
-Robot base
-Known base body name from the Go2 environment config:
+This matters for all indexed vectors:
 
 ```text
-base
+joint_pos
+joint_vel
+joint_torque
+actions
+system_state joint slices
+state/action normalizers
+world-model inputs and targets
 ```
 
-Used for:
+## Body/contact inventory
 
-```python
-self.events.add_base_mass.params["asset_cfg"].body_names = "base"
-self.events.base_external_force_torque.params["asset_cfg"].body_names = "base"
-self.terminations.base_contact.params["sensor_cfg"].body_names = "base"
-```
-
-Feet
-Known foot body pattern:
+Runtime-confirmed durable facts:
 
 ```text
-.*_foot
+body_count = 19
+actuated_joints = 12
+passive_head_links = Head_upper, Head_lower
 ```
 
-Used by Go2 rewards:
-
-```python
-self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
-```
-
-Joint naming pattern
-Known actuator joint regexes:
+For RWM transfer, the important contact groups are:
 
 ```text
-.*_hip_joint
-.*_thigh_joint
-.*_calf_joint
+feet: four foot bodies
+thigh/calf/body contact groups: task-dependent
+base_contact termination: active in the flat locomotion task
 ```
 
-Likely actuated joint count:
+The Phase 4C reward experiments showed that `undesired_contacts` did not provide a useful anti-skate fix for this Go2 flat setup. The working anti-skate term is `feet_slide = -0.25`.
+
+## Actuator block
+
+Go2 uses the Isaac Lab actuator settings from the pinned `unitree.py`.
+
+Durable values confirmed during Phase 4C:
 
 ```text
-12
+effort_limit = 23.5
+stiffness    = 25.0
+damping      = 0.5
 ```
 
-Confirmed at runtime (see "Runtime confirmation" section below).
 
-Initial pose
-From UNITREE_GO2_CFG:
+## Observation and RWM system-state layout
 
-```python
-pos = (0.0, 0.0, 0.4)
-joint_pos = {
-    ".*L_hip_joint": 0.1,
-    ".*R_hip_joint": -0.1,
-    "F[L,R]_thigh_joint": 0.8,
-    "R[L,R]_thigh_joint": 1.0,
-    ".*_calf_joint": -1.5,
-}
-joint_vel = {".*": 0.0}
-```
+The Go2 RWM system state is 45-dimensional.
 
-Actuator model
-Go2 uses a DC motor actuator model:
-
-```python
-DCMotorCfg(
-    joint_names_expr=[".*_hip_joint", ".*_thigh_joint", ".*_calf_joint"],
-    effort_limit=23.5,
-    saturation_effort=23.5,
-    velocity_limit=30.0,
-    stiffness=25.0,
-    damping=0.5,
-    friction=0.0,
-)
-```
-
-Existing Isaac Lab Go2 flat task
-The upstream flat config class is:
-
-```python
-UnitreeGo2FlatEnvCfg
-```
-
-It inherits from:
-
-```python
-UnitreeGo2RoughEnvCfg
-```
-
-Flat config changes:
-
-```python
-self.rewards.flat_orientation_l2.weight = -2.5
-self.rewards.feet_air_time.weight = 0.25
-
-self.scene.terrain.terrain_type = "plane"
-self.scene.terrain.terrain_generator = None
-
-self.scene.height_scanner = None
-self.observations.policy.height_scan = None
-self.curriculum.terrain_levels = None
-```
-
-Existing Isaac Lab Go2 rough task
-The upstream rough config class is:
-
-```python
-UnitreeGo2RoughEnvCfg
-```
-
-Key Go2-specific changes:
-
-```python
-self.scene.robot = UNITREE_GO2_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/base"
-self.actions.joint_pos.scale = 0.25
-self.events.push_robot = None
-self.events.add_base_mass.params["mass_distribution_params"] = (-1.0, 3.0)
-self.events.add_base_mass.params["asset_cfg"].body_names = "base"
-self.events.base_external_force_torque.params["asset_cfg"].body_names = "base"
-self.events.reset_robot_joints.params["position_range"] = (1.0, 1.0)
-self.events.base_com = None
-```
-
-Reward overrides:
-
-```python
-self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
-self.rewards.feet_air_time.weight = 0.01
-self.rewards.undesired_contacts = None
-self.rewards.dof_torques_l2.weight = -0.0002
-self.rewards.track_lin_vel_xy_exp.weight = 1.5
-self.rewards.track_ang_vel_z_exp.weight = 0.75
-self.rewards.dof_acc_l2.weight = -2.5e-7
-```
-
-Termination override:
-
-```python
-self.terminations.base_contact.params["sensor_cfg"].body_names = "base"
-```
-
-Existing Isaac Lab Go2 PPO config
-The upstream RSL-RL classes are:
-
-```python
-UnitreeGo2RoughPPORunnerCfg
-UnitreeGo2FlatPPORunnerCfg
-```
-
-Flat PPO values:
-
-```python
-max_iterations = 300
-experiment_name = "unitree_go2_flat"
-actor_hidden_dims = [128, 128, 128]
-critic_hidden_dims = [128, 128, 128]
-```
-
-Inherited PPO values:
-
-```python
-num_steps_per_env = 24
-save_interval = 50
-init_noise_std = 1.0
-activation = "elu"
-value_loss_coef = 1.0
-clip_param = 0.2
-entropy_coef = 0.01
-num_learning_epochs = 5
-num_mini_batches = 4
-learning_rate = 1.0e-3
-schedule = "adaptive"
-gamma = 0.99
-lam = 0.95
-desired_kl = 0.01
-max_grad_norm = 1.0
-```
-
-RWM transfer implication
-The RWM ANYmal-D manager-based template currently exists only for:
+Layout:
 
 ```text
-upstream/robotic_world_model/source/mbrl/mbrl/tasks/manager_based/locomotion/velocity/config/anymal_d
+0:3     base linear velocity
+3:6     base angular velocity
+6:9     projected gravity
+9:21    joint positions, 12 dims
+21:33   joint velocities, 12 dims
+33:45   joint torques, 12 dims
 ```
 
-It registers:
+Summary:
 
 ```text
-Template-Isaac-Velocity-Flat-Anymal-D-Init-v0
-Template-Isaac-Velocity-Flat-Anymal-D-Pretrain-v0
-Template-Isaac-Velocity-Flat-Anymal-D-Finetune-v0
-Template-Isaac-Velocity-Flat-Anymal-D-Visualize-v0
+system_state_dim = 45
+action_dim       = 12
 ```
 
-A Go2 RWM transfer should create an equivalent config family, probably:
+This matches the Go2 RWM config family and the world-model state index dictionary.
+
+Important implication: the 45-dimensional shape matches ANYmal-D-style locomotion state structure, but the joint-index semantics differ because the robot joint order differs.
+
+## Normalizer decision
+
+Do not reuse ANYmal-D normalizer values — and in practice, use identity normalizers for the current Go2 RWM/RWM-U pipeline.
+
+The original concern remains valid: state-normalizer means/stds are index-dependent. For example, `system_state[9]` refers to a specific Go2 joint, not necessarily the same physical joint as in ANYmal-D. Therefore ANYmal-D normalizer statistics must not be copied to Go2.
+
+Resolved in Phase 4C: the Go2 RWM pipeline uses identity normalizers throughout:
+
+```text
+state_normalizer.mean  = 0
+state_normalizer.std   = 1
+action_normalizer.mean = 0
+action_normalizer.std  = 1
+```
+
+This is position-agnostic and matches the world model actually trained during Go2 pretraining, as confirmed in each run's `params/agent.yaml`.
+
+The invariant is consistency:
+
+```text
+finetune normalizers must match the pretrain normalizers used to train the world model.
+```
+
+Recomputing Go2-specific normalizer statistics is valid only if the world model is freshly pretrained using those same statistics and the finetune carries the same values. Pairing a recomputed finetune normalizer with an identity-trained world model breaks imagination.
+
+## Stock Go2 flat task inventory
+
+The pinned Isaac Lab Go2 flat task provides a usable starting point, but the stock flat reward permits a low/skating velocity-tracking optimum.
+
+Phase 4C confirmed:
+
+```text
+stock flat Go2 can visually scoot / skate
+velocity tracking alone is not enough
+anti-slide shaping is required for a usable transfer baseline
+```
+
+Working Phase 4C reward decision:
+
+```text
+feet_slide = -0.25
+undesired_contacts = None
+```
+
+Rejected/less useful variants:
+
+```text
+feet_slide = -0.10 + undesired_contacts
+feet_slide = -0.50
+```
+
+Interpretation:
+
+- `feet_slide = -0.10` was too weak.
+- `undesired_contacts` did not materially fix the flat Go2 skating mode.
+- `feet_slide = -0.50` was too strong and degraded tracking/gait quality.
+- `feet_slide = -0.25` gave the best tradeoff: less skating, acceptable tracking, usable upright gait.
+
+## RWM Go2 config family
+
+Status as of Phase 4B–4C: created and validated.
+
+The Go2 RWM config family is registered for:
 
 ```text
 Template-Isaac-Velocity-Flat-Unitree-Go2-Init-v0
 Template-Isaac-Velocity-Flat-Unitree-Go2-Pretrain-v0
+Template-Isaac-Velocity-Flat-Unitree-Go2-Baseline-v0
 Template-Isaac-Velocity-Flat-Unitree-Go2-Finetune-v0
 Template-Isaac-Velocity-Flat-Unitree-Go2-Visualize-v0
 ```
 
-The first implementation should adapt from the RWM ANYmal-D config while importing Go2-specific values from Isaac Lab's existing Go2 config.
-
----
-
-## Runtime confirmation (local laptop, tiny run)
-
-Status: confirmed on local laptop before Phase 4A lab work.
-
-A 1-iteration smoke test of the upstream Isaac Lab Go2 flat task was executed locally:
-
-```bash
-# On laptop, in repo root
-source ~/miniforge3/etc/profile.d/conda.sh
-conda activate env_isaaclab_src
-export ACCEPT_EULA=Y
-export OMNI_KIT_ACCEPT_EULA=YES
-export PRIVACY_CONSENT=Y
-
-cd upstream/IsaacLab
-./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
-    --task Isaac-Velocity-Flat-Unitree-Go2-v0 \
-    --num_envs 1 \
-    --max_iterations 1 \
-    --headless \
-    --logger tensorboard
-```
-
-Confirmed at runtime:
-
-- Task `Isaac-Velocity-Flat-Unitree-Go2-v0` registered and resolved
-- Go2 environment created without errors
-- `num_envs = 1`
-- Action shape: `(12,)`
-- Policy observation shape: `(48,)`
-- Actor: input `48`, output `12`
-- Critic: input `48`, output `1`
-- One full PPO iteration completed
-- Total timesteps: `24`
-
-Non-blocking warnings observed (also seen on workstation):
-
-- `isaaclab_contrib` extension.toml warning (extension does not exist in pinned IsaacLab)
-- Warp CUDA driver entry point warning
-- `obs_groups` policy/critic deprecation warning from `rsl_rl_rwm`
-- FabricManager mismatched-prototype command visualization warnings
-
-This confirms the Go2 articulation, action manager, and observation
-manager from upstream Isaac Lab work in our environment as shipped.
-It does not validate Go2 PPO learning (1 iteration is not learning); it
-validates the task plumbing.
-
-## Open items before scaffolding RWM Go2 config
-
-1. Confirm Go2 articulation joint *order* (not just names/count). Joint
-   ordering must match the action vector layout the policy emits.
-   Inspect the articulation at runtime to dump `joint_names` in their
-   actuator order.
-2. Confirm Go2 default joint position vector matches the regex-keyed
-   dict in `UNITREE_GO2_CFG` once resolved to concrete joints.
-3. Confirm Go2 `system_state` shape would be 45 (the ANYmal-D shape) for
-   the RWM dynamics head: 3 lin_vel + 3 ang_vel + 3 gravity + 12 joint_pos
-   + 12 joint_vel + 12 joint_torque. Identical to ANYmal-D if Go2 has
-   12 actuated joints (which it does). Reuse possible without reshaping
-   heads.
-4. Decide on Go2 reward weights for the RWM Init/Pretrain stages. The
-   ANYmal-D weights from the RWM repo and the upstream Go2 weights
-   diverge (e.g. `track_lin_vel_xy_exp` weight is 1.0 in RWM ANYmal-D
-   vs 1.5 in upstream Go2 flat). Start with the RWM ANYmal-D weights
-   to keep the world model and curriculum apples-to-apples, then tune.
-5. Decide whether to keep height_scanner-style observations or strip
-   them as the upstream Go2 *flat* config does. The RWM ANYmal-D *flat*
-   does not use a height scanner, so default to stripping it.
-
-   ## Runtime inspection results (lab workstation)
-
-Generated by `scripts/phase4b/inspect_go2_articulation.py`. Full JSON at
-`logs/go2_inventory/<timestamp>/articulation.json` (gitignored).
-
-### Counts
-
-- Joints: 12
-- Bodies: 19
-
-### Joint order (actuator order)
-
-| Idx | Name | Default (rad) | Lower (rad) | Upper (rad) |
-|---:|---|---:|---:|---:|
-| 0 | FL_hip_joint   | +0.10 | -1.047 | +1.047 |
-| 1 | FR_hip_joint   | -0.10 | -1.047 | +1.047 |
-| 2 | RL_hip_joint   | +0.10 | -1.047 | +1.047 |
-| 3 | RR_hip_joint   | -0.10 | -1.047 | +1.047 |
-| 4 | FL_thigh_joint | +0.80 | -1.571 | +3.491 |
-| 5 | FR_thigh_joint | +0.80 | -1.571 | +3.491 |
-| 6 | RL_thigh_joint | +1.00 | -0.524 | +4.538 |
-| 7 | RR_thigh_joint | +1.00 | -0.524 | +4.538 |
-| 8 | FL_calf_joint  | -1.50 | -2.723 | -0.838 |
-| 9 | FR_calf_joint  | -1.50 | -2.723 | -0.838 |
-| 10 | RL_calf_joint | -1.50 | -2.723 | -0.838 |
-| 11 | RR_calf_joint | -1.50 | -2.723 | -0.838 |
-
-Order is: all four hips, then all four thighs, then all four calves.
-Within each group: FL, FR, RL, RR.
-
-### Bodies
+Source of truth:
 
 ```text
-[ 0] base
-[ 1] FL_hip      [ 2] FR_hip      [ 4] RL_hip      [ 5] RR_hip
-[ 6] FL_thigh    [ 7] FR_thigh    [ 9] RL_thigh    [10] RR_thigh
-[11] FL_calf    [12] FR_calf     [13] RL_calf    [14] RR_calf
-[15] FL_foot    [16] FR_foot     [17] RL_foot    [18] RR_foot
-[ 3] Head_upper  [ 8] Head_lower
+scripts/phase4b/go2_rwm_config/
 ```
 
-Body regex matches:
-
-- `^base$` → `base`
-- `.*_foot` → `FL_foot, FR_foot, RL_foot, RR_foot`
-- `.*_thigh` → `FL_thigh, FR_thigh, RL_thigh, RR_thigh`
-- `.*_calf` → `FL_calf, FR_calf, RL_calf, RR_calf`
-
-### system_state shape (RWM dynamics head)
+Installed runtime location:
 
 ```text
-base_lin_vel      : 3
-base_ang_vel      : 3
-projected_gravity : 3
-joint_pos         : 12
-joint_vel         : 12
-joint_torque      : 12
---------------------- :
-total             : 45
+upstream/robotic_world_model/source/mbrl/mbrl/tasks/manager_based/locomotion/velocity/config/go2/
 ```
 
-Matches ANYmal-D. The RWM world-model architecture (state/contact/
-termination heads, GRU shape, normalizer dims) can be reused without
-shape changes.
+The install mechanism is:
 
-### Implications for the RWM Go2 config
+```text
+/isaac-sim/python.sh scripts/phase4b/install_go2_config.py --force
+```
 
-1. **Reuse architecture.** Action dim 12, observation dim 48, system_state
-   dim 45. All identical to ANYmal-D. `SystemDynamicsEnsemble` heads, GRU
-   hidden size, normalizer shapes do not need to be modified.
+If the installer is unavailable, a manual copy can reproduce the same state, but the installer is the preferred reproducible path.
 
-2. **Do not reuse normalizer values.** The state-normalizer means/stds in
-   `RslRlNormalizerCfg` are position-dependent. Index 9 of the joint_pos
-   slice is `FL_calf` for Go2 but is a different joint for ANYmal-D.
-   Recompute normalizer statistics from Go2 rollouts before training the
-   Go2 world model.
+## RWM pretrain status
 
-3. **Head bodies (`Head_upper`, `Head_lower`) are passive.** They have no
-   actuated joints (joint count stays 12). They do have colliders, so they
-   could trigger contact-based rewards or terminations if matched by a
-   broad body regex. The standard patterns are safe: `.*_thigh` does not
-   match `Head_upper`, etc. Keep an explicit `^base$` for termination
-   rather than anything broader.
+A usable Go2 RWM pretrain was obtained with the Phase 4C reward patch.
 
-4. **Front/rear thigh limits are asymmetric.** Front thighs:
-   `[-1.571, +3.491]`. Rear thighs: `[-0.524, +4.538]`. Per-joint reset
-   randomization ranges may need to respect this if randomization is
-   widened beyond `(1.0, 1.0)`. For initial Pretrain, default reset is
-   inside both ranges.
+Accepted pretrain:
 
-5. **Default pose is valid.** All twelve defaults sit inside their soft
-   limits with comfortable margin. No clamping warnings expected at
-   reset.
+```text
+run:        2026-06-12_09-07-38_pretrain
+checkpoint: model_2000.pt
+reward:     feet_slide = -0.25
+```
 
-### Closure of open items
+Approximate accepted metrics:
+
+```text
+base_contact         ≈ 0.02
+episode_length       ≈ 982
+error_vel_xy         ≈ 0.20
+feet_slide reward    ≈ -0.06
+visual gait          acceptable / upright / non-belly-skating
+```
+
+This is the clean single-model RWM pretrain baseline.
+
+## Plain MBPO finetune status
+
+A valid plain MBPO finetune was run from the accepted pretrain.
+
+Plain MBPO negative-control run:
+
+```text
+run:        2026-06-12_11-07-01_finetune
+pretrain:   2026-06-12_09-07-38_pretrain/model_2000.pt
+ensemble:   1
+penalty:    uncertainty_penalty_weight = -0.0
+```
+
+Important scalar confirmations:
+
+```text
+Imagination/feet_slide              = 0
+Model Based/epistemic_uncertainty   = 0
+Model Based/num_valid_imagination_envs = 8192
+```
+
+Final aggregate metrics showed substantial degradation relative to the pretrain:
+
+```text
+Train/mean_reward                  ≈ 8.11
+Train/mean_episode_length          ≈ 607.65
+Episode_Termination/base_contact   ≈ 0.30 final, often 0.38–0.50 near the end
+Episode_Reward/track_lin_vel_xy_exp ≈ 0.50
+Episode_Reward/feet_slide          ≈ -0.225
+```
+
+Interpretation:
+
+A single rendered rollout can still look acceptable, but aggregate real-sim metrics show distributional instability and frequent base-contact termination. This run is a useful plain-MBPO negative control, not the final RWM-U method.
+
+## Reward mismatch and imagination handling
+
+The Go2 flat real rollout reward includes `feet_slide`, but the RWM imagination reward cannot compute true physical feet sliding unless an explicit imagined/proxy term is implemented.
+
+Observed issue:
+
+```text
+KeyError: 'feet_slide'
+```
+
+Cause:
+
+```text
+real rollout reward includes feet_slide
+imagination reward dictionary did not contain a valid feet_slide term
+```
+
+Runtime fix:
+
+```python
+if term not in self.imagination_reward_per_step:
+    continue
+```
+
+Patched file:
+
+```text
+upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py
+```
+
+Tracked patch file should be kept under the Phase 4B/4C scripts area so the submodule edit is reproducible.
+
+Interpretation:
+
+```text
+Episode_Reward/feet_slide is real-only.
+Imagination/feet_slide is zero/skipped.
+```
+
+This is acceptable for the controlled comparison only if held constant across finetune arms. The cleaner future implementation is to explicitly split rewards into:
+
+```text
+real_env_rewards
+imagination_rewards
+```
+
+and to replace true `feet_slide` with an imagination-computable proxy if needed.
+
+## RWM-U ensemble pretrain status
+
+The clean RWM-U comparison requires an ensemble world model.
+
+Current ensemble pretrain:
+
+```text
+run:        2026-06-12_13-39-03_pretrain_ens5
+ensemble:   5
+run_name:   pretrain_ens5
+penalty:    uncertainty_penalty_weight = -0.0
+```
+
+Purpose:
+
+```text
+Train the shared ensemble-5 pretrain checkpoint used by both finetune arms.
+```
+
+This run should produce:
+
+```text
+logs/rsl_rl/unitree_go2_flat/2026-06-12_13-39-03_pretrain_ens5/model_2000.pt
+```
+
+Gate before finetunes:
+
+```text
+model_2000.pt exists
+base_contact is low
+episode length is near timeout
+feet_slide is controlled
+render looks like the accepted 09-07-38 pretrain
+```
+
+Do not judge this gate from a single video only. Use aggregate metrics and a render.
+
+## RWM-U finetune comparison plan
+
+The primary RWM-U experiment should compare two finetune arms from the same ensemble-5 pretrain.
+
+Shared setup:
+
+```text
+pretrain checkpoint: 2026-06-12_13-39-03_pretrain_ens5/model_2000.pt
+ensemble_size:       5
+feet_slide handling: real-only / skipped in imagination
+normalizers:         identity
+max_iterations:      same for both arms
+```
+
+Arm A — ensemble-5 without uncertainty penalty:
+
+```text
+run_name = "finetune_ens5_pen0"
+uncertainty_penalty_weight = -0.0
+```
+
+Arm B — RWM-U method:
+
+```text
+run_name = "finetune_ens5_pen1"
+uncertainty_penalty_weight = -1.0
+```
+
+Both arms must use exactly the same pretrain:
+
+```python
+load_run = "2026-06-12_13-39-03_pretrain_ens5"
+system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/2026-06-12_13-39-03_pretrain_ens5/model_2000.pt"
+```
+
+The earlier ensemble-1 plain MBPO run remains a supplementary baseline, not the primary ablation partner, because comparing ensemble-1/penalty-0 to ensemble-5/penalty-1 changes two variables at once.
+
+## Evaluation protocol
+
+Primary comparison:
+
+```text
+finetune_ens5_pen0 vs finetune_ens5_pen1
+same pretrain
+same ensemble
+same reward/imagination handling
+only uncertainty_penalty_weight differs
+```
+
+Primary metric:
+
+```text
+Episode_Termination/base_contact averaged over the last ~50 iterations
+```
+
+Secondary metrics:
+
+```text
+Train/mean_episode_length
+Train/mean_reward
+Metrics/base_velocity/error_vel_xy
+Episode_Reward/feet_slide
+Model Based/epistemic_uncertainty
+Episode_Reward/track_lin_vel_xy_exp
+```
+
+Success criterion:
+
+```text
+pen1 has materially lower base_contact than pen0
+pen1 keeps longer episode length
+pen1 preserves upright gait in render
+pen0 shows degradation/collapse or materially worse distributional stability
+```
+
+Interpretation rules:
+
+```text
+Do not judge from one video.
+Do not judge from one scalar snapshot.
+Use last-window averages and trajectory plots.
+```
+
+Best thesis figure:
+
+```text
+base_contact vs finetune iteration
+mean_reward vs finetune iteration
+mean_episode_length vs finetune iteration
+Model Based/epistemic_uncertainty vs finetune iteration
+```
+
+Expected mechanism:
+
+```text
+pen0 can drift into high-uncertainty imagined regions without penalty
+pen1 subtracts epistemic uncertainty from imagined reward and should avoid that drift
+```
+
+If both arms collapse:
+
+```text
+-1.0 may be too weak
+or the failure is dominated by reward mismatch rather than dynamics uncertainty
+next sweep: -2.0, then possibly -5.0 only if needed
+```
+
+## Closure of open items
 
 | Open item | Status |
 |---|---|
-| 1. Joint order at runtime | Closed — FL/FR/RL/RR by group |
-| 2. Default joint position vector concrete | Closed — see table above |
-| 3. system_state shape verification | Closed — 45, matches ANYmal-D |
-| 4. Go2 reward weights decision | Pending — start with RWM ANYmal-D weights, tune in Phase 4C |
-| 5. height_scanner decision | Pending — strip for flat (matches RWM ANYmal-D flat) |
+| Go2 asset and joint/body inventory | Closed. Runtime-confirmed: 12 actuated joints, 19 bodies, passive `Head_upper` and `Head_lower`, FL/FR/RL/RR grouped joint order. |
+| Actuator values | Closed. Confirmed from pinned `unitree.py`: effort `23.5`, stiffness `25.0`, damping `0.5`, init height `0.4`. |
+| RWM Go2 task registration | Closed. Init/Pretrain/Baseline/Finetune/Visualize task family exists and is installed from `scripts/phase4b/go2_rwm_config/`. |
+| Go2 reward weights decision | Closed in Phase 4C. RWM ANYmal-D-style base weights were kept; the missing piece was anti-slide shaping, not reward-scale retuning. Stock flat Go2 and early RWM Go2 runs exposed a low/skating velocity-tracking optimum. The working fix is `feet_slide = -0.25`, with `undesired_contacts = None`. |
+| `height_scanner` decision | Closed. Removed/stripped for the flat Go2 task, matching RWM ANYmal-D flat and stock IsaacLab Go2 flat behavior. |
+| Normalizer decision | Closed for current pipeline. Use identity normalizers consistently across pretrain and finetune. Do not reuse ANYmal-D stats. Recomputed Go2 stats are allowed only for a fresh pretrain+finetune pair using the same stats. |
+| Reward/imagination mismatch | Known and controlled. `feet_slide` is real-only and skipped in imagination. This must be held constant across pen0 and pen1. A cleaner future implementation should explicitly split real and imagination reward terms. |
+| RWM-U comparison | In progress. Requires ensemble-5 pretrain followed by pen0 and pen1 finetunes from the same checkpoint. |
+
+## Current bottom line
+
+The transfer inventory is complete enough for Go2 RWM/RWM-U experiments.
+
+Durable facts:
+
+```text
+Go2 joint/body/actuator inventory is known.
+system_state layout is 45-dimensional.
+identity normalizers are the current correct choice.
+feet_slide = -0.25 is the working real-rollout anti-skate patch.
+Go2 RWM task family is registered and usable.
+plain MBPO has a documented aggregate instability negative control.
+RWM-U requires ensemble-5 pen0 vs pen1 comparison from the same pretrain.
+```
+
+Main invariant going forward:
+
+```text
+Do not compare different pretrains when attributing the effect of uncertainty penalty.
+For the main RWM-U claim, pen0 and pen1 must start from the same ensemble-5 checkpoint.
+```

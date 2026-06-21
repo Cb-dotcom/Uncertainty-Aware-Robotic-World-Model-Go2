@@ -29,6 +29,13 @@ nav:
       - Checkpoint and Finetune Status: validation/checkpoint-and-finetune-status.md
       - RWM-U Execution Check: validation/rwm-u-execution-check.md
       - Reproduction Status: validation/reproduction-status.md
+      - "Phase 4A — Lab workstation": validation/phase-4a-lab-validation.md
+      - "Phase 4B — Go2 scaffold":    validation/phase-4b-go2-scaffold.md
+      - "Phase 4C — Go2 gait, MBPO, RWM-U setup": validation/phase-4c-go2-gait-mbpo-rwmu.md
+      - "Phase 4D — Online collapse and the offline pivot": validation/phase-4d-online-collapse-and-pivot.md
+      - "Phase 4E — Offline pipeline, eval harness, ANYmal gate": validation/phase-4e-offline-pipeline-and-anymal-gate.md
+      - "Phase 4F — Curated WM, freeze bug, offline walker": validation/phase-4f-curated-wm-and-offline-walker.md
+      - "Engineering Findings and Confounds": validation/engineering-findings.md
 
   - Robotic World Model:
       - Task Modes: world-model/task-modes.md

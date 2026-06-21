@@ -1,8 +1,16 @@
 # Reproduction Status
 
-This page is the per-claim ledger for the project. It separates *execution claims* (whether the code has been run end-to-end on local or lab hardware) from *mapping claims* (whether the paper's content has been identified in the code). The two axes are independent and use the [convention vocabulary](../index.md#conventions) from the landing page.
+This page is the per-claim ledger for the project. It separates *execution claims* (whether the code has
+been run end-to-end on local or lab hardware) from *mapping claims* (whether the paper's content has been
+identified in the code). The two axes are independent and use the [convention vocabulary](../index.md#conventions)
+from the landing page.
 
-For the procedural and architectural detail behind each row, follow the cross-references.
+For the procedural and architectural detail behind each row, follow the cross-references. The narrative
+behind the lab campaign is in the phase logs:
+[4A](phase-4a-lab-validation.md) · [4B](phase-4b-go2-scaffold.md) · [4C](phase-4c-go2-gait-mbpo-rwmu.md) ·
+[4D](phase-4d-online-collapse-and-pivot.md) · [4E](phase-4e-offline-pipeline-and-anymal-gate.md) ·
+[4F](phase-4f-curated-wm-and-offline-walker.md), with cross-cutting bugs and confounds in
+[Engineering Findings](engineering-findings.md).
 
 ## Execution claims
 
@@ -10,40 +18,45 @@ What has been executed, on which hardware, with what outcome.
 
 | Claim | Status | Evidence | Required to advance |
 |---|---|---|---|
-| Local Isaac Lab and RWM stack runs headlessly. | Validated | Baseline task reaches PPO learning iterations (`manifests/baseline_state_*.txt`). | None for local validation. |
+| Local Isaac Lab and RWM stack runs headlessly. | Validated | Baseline task reaches PPO learning iterations. | None for local validation. |
 | Baseline ANYmal-D task `Init-v0` executes locally. | Validated | See [Baseline Execution](baseline-execution.md). | None. |
-| RWM pretraining pipeline executes end-to-end at reduced scale on local hardware and writes checkpoints. | Validated at reduced scale | Reduced-scale Pretrain-v0 run produced `model_0.pt`, `model_1.pt`. See [World-Model Pretraining Check](world-model-pretraining-check.md). | Lab-scale pretraining for full validation. |
-| Default RWM pretraining configuration runs on local hardware. | Not verified | Default config exceeds 8 GB VRAM during system-dynamics loss. | Lab workstation with sufficient VRAM. |
-| RWM pretraining at the paper's full scale ($M=32$, $N=8$, batch 1024, 2500 iterations) on lab hardware. | Not verified | Lab access not yet exercised. | Lab workstation execution. |
-| Trained dynamics model has useful predictive accuracy on held-out trajectories. | Not verified | Reduced-scale run was not configured for predictive performance. | Full pretrain plus held-out forecast evaluation. |
-| Imagination-based finetuning (`Finetune-v0`) runs end-to-end. | Not verified | Upstream config requires a pretrained dynamics checkpoint that does not exist locally. See [Checkpoint and Finetune Status](checkpoint-and-finetune-status.md). | Generate or obtain a valid dynamics checkpoint and a project-specific finetune config. |
-| MBPO-PPO produces a policy whose performance matches the paper's reported `0.90 ± 0.04` velocity-tracking reward. | Not verified | No finetuning has been run. | Finetune execution and benchmark evaluation. |
-| RWM-U + MOPO-PPO configuration (`ensemble_size > 1`, nonzero uncertainty penalty with the correct sign) runs end-to-end. | Not verified | Path not yet exercised. The hooks exist in code but have not been activated. | Activate config, validate at reduced scale, then full scale. |
-| Zero-shot deployment of trained policy on hardware. | Not verified | No trained policy has been deployed. | Trained MBPO-PPO policy plus hardware availability. |
+| RWM pretraining executes end-to-end at reduced scale locally and writes checkpoints. | Validated at reduced scale | See [World-Model Pretraining Check](world-model-pretraining-check.md). | Superseded by lab-scale runs. |
+| RWM/RWM-U training stack runs at meaningful scale on lab hardware. | Validated | Go2 pretrain/finetune and offline fits run through Isaac Sim on `rwmu-cogar-cb`. See [Phase 4C](phase-4c-go2-gait-mbpo-rwmu.md)–[4F](phase-4f-curated-wm-and-offline-walker.md). | None. |
+| Go2 RWM pretrain learns velocity tracking but **scoots** (reward loophole). | Validated | `feet_slide`-free pretrain skates; confirmed by render and by stock-Go2 control also skating. See [Phase 4C](phase-4c-go2-gait-mbpo-rwmu.md). | Fixed via `feet_slide=-0.25`. |
+| `feet_slide` penalty yields a clean walking Go2 pretrain baseline. | Validated | `2026-06-12_09-07-38_pretrain` (ens1) and `2026-06-12_13-39-03_pretrain_ens5` walk, `base_contact ≈ 0.02`. | None. |
+| **Online** MBPO/RWM-U finetune on Go2 collapses (model exploitation). | Validated | `pen0`/`pen1`/`h32` all collapse to ~0.5–0.7 `base_contact` from a shared good state; failure is largely penalty-independent; horizon is not the lever. See [Phase 4D](phase-4d-online-collapse-and-pivot.md). | Motivation, not contribution. |
+| **Offline** RWM-U / MOPO-PPO pipeline ported to Go2 and runs end-to-end. | Validated | config/env/dispatch/collector built; `--task go2_flat` trains and saves. See [Phase 4E](phase-4e-offline-pipeline-and-anymal-gate.md). | None. |
+| Real-environment eval harness + velocity trace validated. | Validated | Catches non-movers (`error_vel_xy` flattered a standing policy); known-good `ens5` walker reads correctly (actual 0.669/cmd 0.709, corr +0.98). See [Engineering Findings](engineering-findings.md#the-metric-that-lied-error_vel_xy-flatters-non-movers). | None. |
+| **ANYmal gate**: offline RWM-U on the authors' WM trains and evaluates to a walking policy. | Validated | Penalty −1.0 → `track_lin_vel_xy_exp ≈ 0.417`; penalty 0 collapses. Apparatus validated end-to-end. See [Phase 4E §3](phase-4e-offline-pipeline-and-anymal-gate.md#3-the-anymal-gate--validating-the-apparatus). | Confound: uses authors' WM (see below). |
+| Standalone offline Go2 world-model fit produces a loadable, accurate-enough WM. | Validated | `fit_world_model.py` lifts the exact loss; strict-load architecture check passes; held-out termination AUC 0.978 (bimodal). See [Phase 4F](phase-4f-curated-wm-and-offline-walker.md). | n=1 WM; coverage half-covered. |
+| Offline RWM-U produces a **command-following** Go2 walker. | Validated (seed-fragile) | Best seed (−0.25): actual 0.22 m/s, corr +0.78, `track_lin` 0.44 (≈ offline-ANYmal 0.417). Minority basin (~2/10 seeds); majority stand. Weak/slip-heavy gait. See [Phase 4F §5](phase-4f-curated-wm-and-offline-walker.md#5-the-offline-walker--and-an-honest-account-of-it). | Robustness/coverage; not yet paper-parity. |
+| Our **WM-fitting pipeline** matches the authors' on ANYmal. | Not verified | The ANYmal gate used the authors' WM. Our-fit ANYmal WM never built. | The [ANYmal-WM diagnostic](engineering-findings.md#the-anymal-wm-diagnostic-named-future-work). |
+| MBPO-PPO matches the paper's `0.90 ± 0.04` tracking. | Qualitatively validated at reduced scale | Online best-checkpoint tracking ~0.92 at the paper's short budget; degrades past it (exploitation). | Not the thesis target (offline is). |
+| Zero-shot hardware deployment. | Not verified | No policy deployed; the deployable artifact today is the `ens5` online walker, not the offline policy. | Robustness + safety gating (Phase 4G). |
 
 ## Mapping claims
 
-What has been identified in the code as a counterpart to a paper claim.
+What has been identified in the code as a counterpart to a paper claim. *(Unchanged from prior; the RWM
+architecture/loss/algorithm mappings below were established during P1 and remain accurate.)*
 
 | Paper claim | Status | Cross-reference |
 |---|---|---|
 | RWM world model architecture (GRU base, MLP heads). | Mapped | [Implementation Analysis §4](../world-model/implementation-analysis.md#4-system-dynamics-module). |
-| Dual-autoregressive training (inner + outer autoregression). | Mapped | [Implementation Analysis §4 to §5](../world-model/implementation-analysis.md). |
-| Multi-step prediction loss (Eq. 2). | Partially mapped | [Synthesis §1](../world-model/paper-to-code-synthesis.md#1-method-components); discrepancy on $L_o$ form. |
+| Dual-autoregressive training. | Mapped | [Implementation Analysis §4–§5](../world-model/implementation-analysis.md). |
+| Multi-step prediction loss (Eq. 2). | Partially mapped | [Synthesis §1](../world-model/paper-to-code-synthesis.md#1-method-components). |
 | MBPO-PPO algorithm (Algorithm 1). | Mapped | [Implementation Analysis §7](../world-model/implementation-analysis.md#7-model-based-runner). |
-| Imagined action selection (Eq. 3). | Mapped | [Implementation Analysis §9](../world-model/implementation-analysis.md#9-imagination-environment). |
-| Autoregressive evaluation under noise injection (paper Fig. 3b). | Mapped | `evaluate_system_dynamics(...)` rolls out 100 trajectories of length 400 with noise scales `[0.1, 0.2, 0.4, 0.5, 0.8]`, matching the noise levels in the paper figure. See [Implementation Analysis §5.10](../world-model/implementation-analysis.md#510-autoregressive-evaluation-procedure). |
-| Reward function (paper Section A.1.2). | Partially mapped | [Synthesis §2](../world-model/paper-to-code-synthesis.md#2-reward-terms); 11 reward terms active in code (10 inherited from upstream Isaac Lab plus `stand_still` added by project), with three weights overridden by the project. The paper-to-code term-by-term correspondence remains to be verified. |
-| Policy observation versus system-state distinction. | Mapped | Local Pretrain-v0 run shows separate `policy` (48-dim) and `system_state` (45-dim) observation groups; the dynamics model predicts `system_state`, while the policy observation is reconstructed during imagination from predicted state, command, and previous action. See [Implementation Analysis §4.5](../world-model/implementation-analysis.md#45-policy-observation-versus-system-state). |
-| State mean predicted directly (paper does not specify) versus residual prediction (code). | Discrepancy noted | [Synthesis §4.1](../world-model/paper-to-code-synthesis.md#41-state-mean-predicted-as-a-residual). |
-| State loss as Gaussian NLL (architecturally implied) versus sampled MSE (active code). | Discrepancy noted | [Synthesis §4.2](../world-model/paper-to-code-synthesis.md#42-state-loss-is-sampled-mse-not-gaussian-nll). |
-| Imagination autoregressive horizon: 100 steps per iteration (paper) versus 24-step rollout (code). | Discrepancy in scale | [Synthesis §4.3](../world-model/paper-to-code-synthesis.md#43-imagination-autoregressive-horizon-is-shorter-than-the-paper). |
-| Uncertainty handling (RWM-U paper, not RWM paper) hooks present in code but switched off. | Discrepancy noted | [Synthesis §4.4](../world-model/paper-to-code-synthesis.md#44-uncertainty-hooks-present-but-inactive). |
+| MOPO-PPO offline optimizer with uncertainty penalty (RWM-U). | Mapped + Validated | Offline `model_based/` pipeline exercised end-to-end on ANYmal and Go2; penalty sign/scale studied. See [Phase 4E](phase-4e-offline-pipeline-and-anymal-gate.md)–[4F](phase-4f-curated-wm-and-offline-walker.md). |
+| Autoregressive evaluation under noise injection (Fig. 3b). | Mapped | Noise scales `[0.1…0.8]` match the figure. |
+| Reward function (Section A.1.2). | Partially mapped | 11 active terms; Go2 set documented in [Phase 4C §12](phase-4c-go2-gait-mbpo-rwmu.md). |
+| Policy observation (48-dim) vs system state (45-dim). | Mapped | Reconstructed in imagination from predicted state + command + previous action. |
+| State predicted as residual; state loss as sampled MSE. | Discrepancy noted | [Synthesis §4.1–§4.2](../world-model/paper-to-code-synthesis.md). |
+| Termination head trained with naive BCE (class-imbalance blind). | Discrepancy noted + addressed | Online head collapses to all-negative ([Phase 4D §3](phase-4d-online-collapse-and-pivot.md)); offline fit injects `pos_weight` ([Phase 4F §2](phase-4f-curated-wm-and-offline-walker.md)). |
 
 ## Notes
 
-The execution claims marked "Not verified" are not failures; they are blocked on lab access, lab access plus checkpoint generation, or hardware deployment that is later in the project. The mapping claims marked "Discrepancy noted" are findings to surface to a supervisor as part of a faithful reproduction effort, not as defects in the codebase.
-
-The single execution claim that does qualify as an active blocker is the dynamics checkpoint dependency for `Finetune-v0`, which is documented in [Checkpoint and Finetune Status](checkpoint-and-finetune-status.md) along with the path forward.
-
-The RWM-U row in the execution table is currently a structural placeholder. The corresponding paper analysis and implementation analysis will be added under a parallel `uncertainty-aware/` folder once that work begins.
+The picture changed substantially from the early-project ledger: the RWM-U path is no longer a
+"structural placeholder" — it has been exercised end-to-end, offline, on both ANYmal (validation gate)
+and Go2 (the contribution). The honest current frontier is **robustness and coverage**: a command-following
+offline Go2 walker exists but is a seed-fragile minority basin at offline-ANYmal parity, the world model
+is `n=1`, and the cleanest next experiment is the [ANYmal-WM diagnostic](engineering-findings.md#the-anymal-wm-diagnostic-named-future-work)
+to localize whether the remaining gap is the WM-fitting pipeline or the dataset coverage.

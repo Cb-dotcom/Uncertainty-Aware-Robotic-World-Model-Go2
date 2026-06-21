@@ -7,13 +7,14 @@ The project builds on two papers by Li, Krause, and Hutter (ETH Zurich):
 1. Robotic World Model (RWM) with the MBPO-PPO policy optimizer, trained online with environment interaction.
 2. Uncertainty-Aware Robotic World Model (RWM-U) with the MOPO-PPO policy optimizer, trained fully offline with ensemble-based uncertainty penalization.
 
-The upstream codebase contains two model-based training pipelines that share backbone components but have separate entry scripts, configs, environments, and runners. The manager-based pipeline implements online RWM with MBPO-PPO; the standalone `model_based/` pipeline implements offline RWM-U with MOPO-PPO. The project exercises both. The two-pipeline structure is documented in detail in [Uncertainty-Aware Implementation Analysis §1](uncertainty-aware-world-model/implementation-analysis.md#1-two-model-based-pipelines-coexist-in-the-repository).
+The original project's source code and files contain two model-based training pipelines that share backbone components but have separate entry scripts, configs, environments, and runners. The manager-based pipeline implements online RWM with MBPO-PPO, whereas the standalone `model_based/` pipeline implements offline RWM-U with MOPO-PPO. The project exercises both. The two-pipeline structure is documented in detail in [Uncertainty-Aware Implementation Analysis §1](uncertainty-aware-world-model/implementation-analysis.md#1-two-model-based-pipelines-coexist-in-the-repository).
 
-For high-level project status and the milestone checklist, see the [repository README](https://github.com/Cb-dotcom/Uncertainty-Aware-Robotic-World-Model-Go2). This documentation site is the technical companion to that README.
+The milestone checklist of this project will be at [repository README](https://github.com/Cb-dotcom/Uncertainty-Aware-Robotic-World-Model-Go2).
+This documentation is for the in depth technical side. 
 
 ## Reading paths
 
-Different readers will want different starting points.
+Different readers will want different starting points. Be assured, all roads lead to rome, you will all end up happily in the results page. 
 
 - For project status and direction: [Current Status](project/current-status.md), then [Roadmap](project/roadmap.md), then [Reproduction Status](validation/reproduction-status.md) for the per-claim verification ledger.
 - For setup and reproduction: [Local Environment](setup/local-environment.md), then [Hardware and System Specs](setup/hardware-and-system-specs.md), then [Baseline Execution](validation/baseline-execution.md) for the canonical command and what it verifies.
