@@ -54,12 +54,20 @@ when data is narrow, weak as data broadens.
 
 ## What is open
 
-- **Phase 4H, stage-Mixed.** A true PPO-replay-across-stages dataset (≈1M), fit ens5 identically, then
- re-score the `_9`/`_6` exploit traces. First metric to read: **state-head cosine** (does behavioral
- staging break the ≈0.96 ceiling?), then the exploit delta. Both branches pre-registered in
- [Phase 4G §9](../validation/phase-4g-uncertainty-calibration.md#9-open-resolved-in-phase-4h-stage-mixed).
-- The **morphology / reward-support axis** (Go2 ≈15 kg at the skating optimum; `feet_slide` absent from
- the imagined reward), the remaining live hypothesis if stage-Mixed does not restore selectivity.
+The campaign is **closed on the from-scratch axis.** Stage-Mixed (Phase 4G) decorrelated the ensemble
+heads but did not beat the curated baseline; the reward-support proxy (Phase 4H) froze the policy as
+predicted. Across penalty, data volume, data composition, and reward support, no from-scratch
+configuration produces a robust offline Go2 walker, and the reason is mechanistic, not a bug.
+
+The **warm-start** control has now been run on Go2 (Phase 4H, 3 seeds): initializing the offline policy
+from the clean online ens5 walker and refining against the Go2 world model. It is **locally
+non-destructive**, the output equals the input within seed noise (delta over the init checkpoint
+approximately zero, with feet_slide slightly worse), so it does not demonstrate refinement; it pins the
+discovery-versus-coverage explanation. With this, all levers are closed. Structural directions an
+offline-MBRL group would propose next (independent-trunk ensembles, better-calibrated uncertainty
+estimators, FK reward targets in the world model, warm-start refinement on coverage-rich data,
+morphology-aware reward) are recorded in
+[Phase 4H §5](../validation/phase-4h-policy-headtohead-and-reward-support.md#5-structural-directions-what-an-offline-mbrl-group-would-propose-next).
 
 ## Honest framing for write-up / defense
 
@@ -69,3 +77,27 @@ exploit↔freeze frontier, not the headline. State plainly: there is **no code-l
 us from the paper; the genuine differences are data composition (expert+noise vs PPO-replay Mixed),
 scale (≈1M vs the paper's 6M), and a lighter robot. The negative sits directly on top of the paper's own
 stated limitation that offline data lacks the failure/recovery transitions that matter.
+
+
+## Research questions (thesis spine)
+
+The campaign resolves into four questions, each answered by experiment:
+
+- **RQ1. Can offline RWM-U discover Go2 locomotion from scratch?** Not reliably. From-scratch runs
+  collapse to standing, sliding, weak tracking, or fall-prone motion, surviving penalty tuning, failure
+  augmentation, true-Mixed composition, and a reward-support proxy.
+- **RQ2. Is the failure only uncertainty calibration or missing failure data?** No. +fail and true-Mixed
+  change the uncertainty behavior (flat vs over-conservative) but do not recover robust from-scratch
+  walking, and true-Mixed does not beat the curated baseline.
+- **RQ3. Is it a missing reward-support issue?** A crude stance-motion proxy reduces sliding but
+  suppresses locomotion (freeze), so proxy reward shaping inside an exploitable model is not enough.
+- **RQ4. Can offline RWM-U refine an already-competent Go2 walker?** Warm-start is *locally
+  non-destructive*: across three seeds it preserves strong walking (~0.65-0.69 m/s, corr ~0.98), but the
+  output equals the competent input within seed noise and PPO barely updates, so this is staying-put, not
+  measurable refinement.
+
+**Single defensible thesis claim.** Offline RWM-U transferred to Go2 as a *locally non-destructive*
+method around a competent policy, not as a reliable from-scratch locomotion-discovery method; the model
+is accurate only where the data is dense, and a light, slide-prone morphology with a slide-blind imagined
+reward makes from-scratch discovery exploitable, which together explain why a coverage-rich, heavier-robot
+setup reaches 0.91 and a 115k-transition Go2 setup does not.

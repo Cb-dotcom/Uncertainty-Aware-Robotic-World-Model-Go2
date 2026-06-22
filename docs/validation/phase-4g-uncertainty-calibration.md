@@ -192,7 +192,7 @@ optimum the heavier ANYmal does not.
 
 ---
 
-## 9. Open: resolved in Phase 4H (stage-Mixed)
+## 9. Resolved: stage-Mixed (behavioral composition)
 
 The single remaining lever that tests a *real* difference from the paper: a **true stage-Mixed**
 dataset built from PPO replay across verified walker checkpoints (early/mid/late stages), held at ≈1M,
@@ -203,15 +203,40 @@ behavioral staging decorrelated the heads below the +fail WM's ≈0.96 ceiling.
 
 Two pre-registered branches:
 
-- **Cosine drops and pre-failure selectivity returns** → *data composition*, not volume, is the lever;
- expert+noise was the wrong recipe and behavioral replay restores the MOPO signal. Near-positive
- result.
-- **Cosine stays ≈0.96 and selectivity stays flat** → the shared-trunk ceiling (and/or Go2 morphology /
- `feet_slide`-absent-from-imagination reward support) bounds the mechanism regardless of data. The
- negative becomes bulletproof, having ruled out the data-recipe confound.
+Two pre-registered branches were: cosine drops and selectivity returns (data composition is the lever),
+or cosine stays flat (ceiling/morphology bounds it regardless of data).
 
-Either outcome completes the thesis. *(Result pending; this section will be filled once the stage-Mixed
-fit and exploit re-scoring finish.)*
+**Result (resolved).** The outcome landed between the two branches and the honest reading is the
+narrower one. The state heads **did** decorrelate: mean pairwise cosine 0.965 (curated), 0.960 (+fail),
+**0.850 (true-Mixed)**. Behavioral PPO-stage replay broke the ceiling that expert+noise could not. On
+the exploit traces, true-Mixed **decisively beat +fail** (`_6` pre5 epistemic AUC 0.963 vs 0.636),
+confirming +fail uniquely collapsed the disagreement signal and a heterogeneous set does not.
+
+**But true-Mixed did not beat the original curated WM**, which is the baseline that matters:
+
+| metric | curated | +fail | true-Mixed |
+|---|---|---|---|
+| `_9` pre5 epistemic AUC | 0.969 | collapsed | 0.936 |
+| `_6` pre5 epistemic AUC | 0.969 | 0.636 | 0.963 |
+| `_6` fall epistemic AUC | 0.979 | : | 0.970 |
+| `_9` fall epistemic AUC | 0.982 | : | 0.989 |
+
+On the clean selectivity metric, true-Mixed is at best a tie and on most cuts slightly *trails* the
+115k curated WM the campaign started with. Net improvement over the starting point is approximately
+zero. Two cautions bound the claim: the cosine is **weight-space** (0.85 is still strongly aligned;
+output disagreement is what is measured directly), and true-Mixed is **also noise-free with a different
+fall count**, so "behavioral diversity" is not cleanly isolated; state it as "this specific clean
+6-stage set." And the **MSE is an alarm, not a feature**: true-Mixed's failure-state prediction error
+is 73-82x walking versus curated's ~11x, so it is dramatically more wrong off-support. Uniformly high
+uncertainty driven by a bad dynamics model off-support is the *freeze* half of the exploit-to-freeze
+frontier, not a protective penalty.
+
+**Defensible conclusion: a mechanism contrast, not a victory.** Homogeneous manifold-centered failure
+augmentation uniquely collapses ensemble disagreement; heterogeneous data does not, but it does not buy
+net selectivity over the curated model either, and does so at a large off-support MSE cost. The data
+axis moves the system between two failure modes (flat-uncertainty vs over-conservative-off-support)
+without clearing the bar curated already set. This is carried into the policy-facing test in
+[Phase 4H](phase-4h-policy-headtohead-and-reward-support.md).
 
 ---
 
@@ -227,4 +252,4 @@ fit and exploit re-scoring finish.)*
 - Mechanism: **shared-trunk + bootstrapped-heads ceiling** (paper-faithful architecture), state-head
  cosine ≈0.96 on broad data.
 - Dead ends documented (§7) so they are not re-run.
-- One open lever (stage-Mixed) with both branches pre-registered (§9).
+- Stage-Mixed resolved (§9): heads decorrelate but do not beat curated; mechanism contrast, not victory.

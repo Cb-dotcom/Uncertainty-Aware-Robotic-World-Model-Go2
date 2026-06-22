@@ -4,14 +4,12 @@ hide:
 ---
 
 <div class="rwm-hero" markdown="1">
-<p class="rwm-eyebrow">MSc Thesis · Offline Model-Based RL · Quadruped Locomotion</p>
 # Uncertainty-Aware Robotic World Model for Go2
-<p>Technical documentation for reproducing, analyzing, and extending the ETH Zurich Robotic World Model pipeline, with the target platform being the Unitree Go2. This site is the in-depth engineering and validation record behind the thesis.</p>
+<p>Technical documentation for reproducing, analyzing, and extending the ETH Zurich Robotic World Model pipeline, with the target platform being the Unitree Go2. This site is the in-depth engineering and validation record for the project.</p>
 <div class="rwm-badges">
   <span class="rwm-badge">RWM · MBPO-PPO (online)</span>
   <span class="rwm-badge">RWM-U · MOPO-PPO (offline)</span>
   <span class="rwm-badge">Isaac Lab · Unitree Go2</span>
-  <span class="rwm-badge">RTX 6000 Ada</span>
 </div>
 </div>
 

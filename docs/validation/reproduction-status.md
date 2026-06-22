@@ -33,7 +33,7 @@ What has been executed, on which hardware, with what outcome.
 | Our **fitter** produces an architecture-compatible, converging ANYmal WM. | Validated | ens1 strict-loads the reference; state loss 0.62→0.015. Fitter not broken. See [Phase 4G §1](phase-4g-uncertainty-calibration.md#1-the-anymal-fitter-gate-the-fitter-is-not-broken). | n/a, gate passed. |
 | A penalty-active reference-vs-fitted MOPO A/B on ANYmal. | Not verifiable (structural) | Only an **ens1** reference exists; ens1 → epistemic ≡ 0, so the penalty is inert. No ens5 ANYmal reference on disk. See [Phase 4G §2](phase-4g-uncertainty-calibration.md#2-the-anymal-structural-wall-the-mopo-discriminator-cannot-be-built-there). | Cannot be built on ANYmal; mechanism only testable on Go2 (ens5). |
 | **Epistemic uncertainty tracks model error near policy-induced failures** (the MOPO assumption). | Refuted (for the failure-augmented Go2 WM) | Two exploit traces: pre-failure MSE ratio 19-25× vs disagreement ratio ≈1×; selectivity AUC collapses 0.97→0.65 vs the narrow curated WM. Miscalibration, not ignorance (prediction ≈3× better, walking baseline ≈3× higher). See [Phase 4G §4-§5](phase-4g-uncertainty-calibration.md#4-the-result-prediction-improves-disagreement-does-not-track-error). | The headline finding. |
-| Broadening data restores the conservative penalty signal. | Open | Stage-Mixed (PPO replay) at ≈1M not yet scored; both branches pre-registered. See [Phase 4G §9](phase-4g-uncertainty-calibration.md#9-open-resolved-in-phase-4h-stage-mixed). | Phase 4H stage-Mixed exploit re-scoring. |
+| Broadening data restores the conservative penalty signal. | Refuted (net) | Stage-Mixed (PPO replay, ≈1M) decorrelated the heads (cosine 0.965→0.850) and beat +fail, but did **not** beat the curated baseline on exploit selectivity, at a 73-82x off-support MSE cost. Mechanism contrast, not a gain. See [Phase 4G §9](phase-4g-uncertainty-calibration.md#9-resolved-stage-mixed-behavioral-composition). | Closed; reward-support and from-scratch axes closed in Phase 4H. |
 | MBPO-PPO matches the paper's `0.90 ± 0.04` tracking. | Qualitatively validated at reduced scale | Online best-checkpoint tracking ~0.92 at the paper's short budget; degrades past it (exploitation). | Not the thesis target (offline is). |
 | Zero-shot hardware deployment. | Not verified | No policy deployed; the deployable artifact today is the `ens5` online walker, not the offline policy. | Robustness + safety gating (Phase 4G). |
 
@@ -65,5 +65,5 @@ decoupling as proof it is miscalibration rather than ignorance. The mechanism is
 bootstrapped-heads ceiling** (the paper's own architecture, faithfully reproduced; state-head cosine
 ≈0.96 on broad data). The single open lever, whether **behavioral-replay (stage-Mixed)** data restores
 selectivity, is pre-registered with both branches in
-[Phase 4G §9](phase-4g-uncertainty-calibration.md#9-open-resolved-in-phase-4h-stage-mixed); either
+[Phase 4G §9](phase-4g-uncertainty-calibration.md#9-resolved-stage-mixed-behavioral-composition); either
 outcome completes the thesis.
