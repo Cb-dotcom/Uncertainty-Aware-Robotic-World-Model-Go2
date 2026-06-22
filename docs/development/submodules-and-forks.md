@@ -35,20 +35,20 @@ Current committed upstream-code change:
 
 ```text
 rsl_rl_rwm:
-  rsl_rl/runners/mbpo_on_policy_runner.py
-  pretraining cleanup guard
+ rsl_rl/runners/mbpo_on_policy_runner.py
+ pretraining cleanup guard
 ```
 
 Current required runtime patches:
 
 ```text
 robotic_world_model:
-  manager_based_mbrl_env.py imagination-reward skip guard
-  visualize.py render/headless guards
+ manager_based_mbrl_env.py imagination-reward skip guard
+ visualize.py render/headless guards
 
 IsaacLab:
-  play.py render pins
-  stock-Go2 reward-control edits
+ play.py render pins
+ stock-Go2 reward-control edits
 ```
 
 ## Cloning
@@ -118,10 +118,10 @@ Important rule:
 
 ```text
 Edit:
-  scripts/phase4b/go2_rwm_config/
+ scripts/phase4b/go2_rwm_config/
 
 Install to:
-  upstream/robotic_world_model/.../config/go2/
+ upstream/robotic_world_model/.../config/go2/
 
 Do not hand-edit the installed copy except for temporary debugging.
 ```
@@ -130,10 +130,10 @@ Container note:
 
 ```text
 Use:
-  /isaac-sim/python.sh scripts/phase4b/install_go2_config.py --force
+ /isaac-sim/python.sh scripts/phase4b/install_go2_config.py --force
 
 Do not use:
-  python3 scripts/phase4b/install_go2_config.py --force
+ python3 scripts/phase4b/install_go2_config.py --force
 ```
 
 If the installer appears to fail only because `python3` is missing, the fix is to run it through `/isaac-sim/python.sh`, not to hand-copy files.
@@ -172,7 +172,7 @@ Fix:
 
 ```python
 if hasattr(self, "imagination_infos"):
-    self.imagination_infos.clear()
+ self.imagination_infos.clear()
 ```
 
 This is the only project change currently committed directly to an upstream-code fork.
@@ -215,7 +215,7 @@ Patch:
 
 ```python
 if term not in self.imagination_reward_per_step:
-    continue
+ continue
 term_value = self.imagination_reward_per_step[term]
 ```
 
@@ -223,10 +223,10 @@ Meaning:
 
 ```text
 Real rollout:
-  feet_slide active
+ feet_slide active
 
 Imagined rollout:
-  unsupported reward terms skipped
+ unsupported reward terms skipped
 ```
 
 This keeps Go2 training running while making the reward mismatch explicit.
@@ -236,8 +236,8 @@ Verification command:
 ```bash
 docker exec -i rwmu-cogar-cb bash -lc '
 grep -n "if term not in self.imagination_reward_per_step" \
-  /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py \
-  || echo "MISSING — reapply skip patch before finetune"
+ /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py \
+ || echo "MISSING, reapply skip patch before finetune"
 '
 ```
 
@@ -245,8 +245,8 @@ Clean future version:
 
 ```text
 Split rewards explicitly:
-  real_env_rewards
-  imagination_rewards
+ real_env_rewards
+ imagination_rewards
 ```
 
 rather than relying on a missing-key skip.
@@ -282,10 +282,10 @@ Patch style note:
 
 ```text
 Apply with:
-  patch -p1 --forward
+ patch -p1 --forward
 
 Do not use:
-  git apply
+ git apply
 ```
 
 because the patch uses bare `@@` headers.
@@ -346,7 +346,7 @@ Important:
 
 ```text
 The project Go2 reward lives in:
-  scripts/phase4b/go2_rwm_config/
+ scripts/phase4b/go2_rwm_config/
 
 not in the stock IsaacLab Go2 files.
 ```
@@ -399,8 +399,8 @@ system_dynamics_load_path = "logs/rsl_rl/unitree_go2_flat/2026-06-12_13-39-03_pr
 ```bash
 docker exec -i rwmu-cogar-cb bash -lc '
 grep -n "if term not in self.imagination_reward_per_step" \
-  /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py \
-  || echo "MISSING — reapply skip patch before finetune"
+ /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py \
+ || echo "MISSING, reapply skip patch before finetune"
 '
 ```
 
@@ -416,7 +416,7 @@ Then confirm the installed file:
 
 ```bash
 grep -nE "load_run|system_dynamics_load_path|run_name|ensemble_size|uncertainty_penalty_weight" \
-  upstream/robotic_world_model/source/mbrl/mbrl/tasks/manager_based/locomotion/velocity/config/go2/agents/rsl_rl_ppo_cfg.py
+ upstream/robotic_world_model/source/mbrl/mbrl/tasks/manager_based/locomotion/velocity/config/go2/agents/rsl_rl_ppo_cfg.py
 ```
 
 ## Current action item
@@ -425,8 +425,8 @@ The highest-priority patch to formalize is:
 
 ```text
 robotic_world_model:
-  source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py
-  imagination-reward skip guard
+ source/mbrl/mbrl/mbrl/envs/manager_based_mbrl_env.py
+ imagination-reward skip guard
 ```
 
 Reason:

@@ -1,0 +1,229 @@
+/* ============================================================
+   Uncertainty-Aware Robotic World Model, Go2
+   Custom design layer for Material for MkDocs
+   Inspired by NVIDIA / Hugging Face technical docs:
+   restrained palette, strong typography, generous spacing,
+   crisp cards and tables. Not a copy of any single site.
+   ============================================================ */
+
+/* ---- Design tokens --------------------------------------- */
+:root {
+  --md-primary-fg-color:        #0b6b5b;   /* deep teal */
+  --md-primary-fg-color--light: #128a76;
+  --md-primary-fg-color--dark:  #064f43;
+  --md-accent-fg-color:         #00b894;   /* signal green */
+
+  --rwm-ink:        #0f1417;
+  --rwm-muted:      #5b6770;
+  --rwm-line:       #e6eaed;
+  --rwm-surface:    #ffffff;
+  --rwm-surface-2:  #f6f8f9;
+  --rwm-radius:     12px;
+  --rwm-shadow:     0 1px 2px rgba(15,20,23,.06), 0 6px 20px rgba(15,20,23,.05);
+  --rwm-shadow-lg:  0 2px 6px rgba(15,20,23,.08), 0 18px 40px rgba(15,20,23,.10);
+}
+
+/* ---- Typography ------------------------------------------ */
+:root {
+  --md-text-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --md-code-font: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+}
+.md-typeset {
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  font-size: .78rem;
+  line-height: 1.72;
+  color: var(--rwm-ink);
+}
+.md-typeset h1 {
+  font-weight: 760;
+  letter-spacing: -.02em;
+  font-size: 1.95rem;
+  line-height: 1.15;
+  margin: 0 0 .85em;
+}
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -.01em;
+  margin-top: 2.2em;
+  padding-bottom: .3em;
+  border-bottom: 1px solid var(--rwm-line);
+}
+.md-typeset h3 { font-weight: 680; letter-spacing: -.005em; margin-top: 1.8em; }
+.md-typeset h2 + h3 { margin-top: 1em; }
+
+/* ---- Links ----------------------------------------------- */
+.md-typeset a {
+  color: var(--md-primary-fg-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color .15s ease, color .15s ease;
+}
+.md-typeset a:hover {
+  color: var(--md-primary-fg-color--light);
+  border-bottom-color: currentColor;
+}
+
+/* ---- Header ---------------------------------------------- */
+.md-header {
+  background: linear-gradient(90deg, var(--md-primary-fg-color--dark), var(--md-primary-fg-color));
+  box-shadow: var(--rwm-shadow);
+}
+.md-header__title { font-weight: 650; letter-spacing: -.01em; }
+.md-tabs {
+  background: var(--md-primary-fg-color--dark);
+}
+.md-tabs__link { opacity: .82; font-weight: 540; transition: opacity .15s ease; }
+.md-tabs__link:hover, .md-tabs__link--active { opacity: 1; }
+
+/* ---- Code ------------------------------------------------ */
+.md-typeset code {
+  background: var(--rwm-surface-2);
+  border: 1px solid var(--rwm-line);
+  border-radius: 6px;
+  padding: .1em .36em;
+  font-size: .82em;
+}
+.md-typeset pre > code {
+  border: 1px solid var(--rwm-line);
+  border-radius: var(--rwm-radius);
+  box-shadow: var(--rwm-shadow);
+  padding: 1rem 1.1rem;
+}
+.md-typeset .highlight { margin: 1.1em 0; }
+
+/* ---- Tables (the docs lean heavily on result tables) ----- */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--rwm-line);
+  border-radius: var(--rwm-radius);
+  overflow: hidden;
+  box-shadow: var(--rwm-shadow);
+  font-size: .76rem;
+}
+.md-typeset table:not([class]) th {
+  background: var(--rwm-surface-2);
+  font-weight: 650;
+  letter-spacing: -.005em;
+  border-bottom: 1px solid var(--rwm-line);
+}
+.md-typeset table:not([class]) td { border-top: 1px solid var(--rwm-line); }
+.md-typeset table:not([class]) tr:hover td { background: var(--rwm-surface-2); }
+
+/* ---- Admonitions: flatter, calmer ------------------------ */
+.md-typeset .admonition, .md-typeset details {
+  border: 1px solid var(--rwm-line);
+  border-left-width: 3px;
+  border-radius: var(--rwm-radius);
+  box-shadow: var(--rwm-shadow);
+  font-size: .76rem;
+}
+
+/* ---- Content width: slightly wider, easier on long tables  */
+.md-grid { max-width: 64rem; }
+
+/* ============================================================
+   Landing page components (used via attr_list / md_in_html)
+   ============================================================ */
+.rwm-hero {
+  margin: .4rem 0 2.4rem;
+  padding: 2.4rem 2.2rem;
+  border-radius: 18px;
+  background:
+    radial-gradient(1200px 240px at 18% -10%, rgba(0,184,148,.18), transparent 60%),
+    linear-gradient(135deg, #07382f 0%, #0b6b5b 60%, #128a76 100%);
+  color: #eafff7;
+  box-shadow: var(--rwm-shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.rwm-hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(700px 300px at 80% 120%, #000 0%, transparent 70%);
+  pointer-events: none;
+}
+.rwm-hero .rwm-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  font-size: .62rem;
+  font-weight: 700;
+  opacity: .8;
+  margin: 0 0 .6rem;
+}
+.rwm-hero h1 {
+  color: #fff !important;
+  font-size: 2.1rem;
+  margin: 0 0 .5rem !important;
+  border: 0 !important;
+}
+.rwm-hero p { color: #cdeee4; font-size: .9rem; max-width: 46rem; margin: 0; }
+.rwm-hero .rwm-badges { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+.rwm-hero .rwm-badge {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+  padding: .26rem .7rem;
+  font-size: .68rem;
+  font-weight: 600;
+  color: #eafff7;
+}
+
+/* Card grid (Material's built-in .grid.cards is styled here) */
+.md-typeset .grid.cards > :is(ul, ol) > li,
+.md-typeset .grid > .card {
+  border: 1px solid var(--rwm-line);
+  border-radius: var(--rwm-radius);
+  box-shadow: var(--rwm-shadow);
+  padding: 1.1rem 1.2rem;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  background: var(--rwm-surface);
+}
+.md-typeset .grid.cards > :is(ul, ol) > li:hover,
+.md-typeset .grid > .card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--rwm-shadow-lg);
+  border-color: color-mix(in srgb, var(--md-primary-fg-color) 35%, var(--rwm-line));
+}
+.md-typeset .grid.cards > :is(ul, ol) > li > hr { margin: .6em 0; border-color: var(--rwm-line); }
+
+/* Key-result callout band */
+.rwm-keyresult {
+  margin: 1.6rem 0;
+  padding: 1.1rem 1.3rem;
+  border-radius: var(--rwm-radius);
+  border: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 30%, var(--rwm-line));
+  background: color-mix(in srgb, var(--md-accent-fg-color) 7%, var(--rwm-surface));
+  box-shadow: var(--rwm-shadow);
+}
+.rwm-keyresult strong { color: var(--md-primary-fg-color--dark); }
+
+/* Status pills for the ledger */
+.rwm-pill {
+  display: inline-block;
+  padding: .12rem .55rem;
+  border-radius: 999px;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  border: 1px solid transparent;
+}
+.rwm-pill.ok      { background: #e7f7f1; color: #06694f; border-color: #bfe9d9; }
+.rwm-pill.open    { background: #fff4e0; color: #8a5a00; border-color: #f3dcab; }
+.rwm-pill.refuted { background: #fdecec; color: #9b1c1c; border-color: #f3c4c4; }
+
+/* ---- Dark scheme overrides ------------------------------- */
+[data-md-color-scheme="slate"] {
+  --rwm-ink:       #e6edf0;
+  --rwm-muted:     #9aa7b0;
+  --rwm-line:      #2a3339;
+  --rwm-surface:   #11181c;
+  --rwm-surface-2: #161e23;
+  --md-primary-fg-color: #128a76;
+  --rwm-shadow:    0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+  --rwm-shadow-lg: 0 2px 6px rgba(0,0,0,.5), 0 18px 40px rgba(0,0,0,.45);
+}
+[data-md-color-scheme="slate"] .md-typeset code { background: var(--rwm-surface-2); }

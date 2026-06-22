@@ -1,42 +1,70 @@
 site_name: Uncertainty-Aware Robotic World Model — Go2
 site_url: https://cb-dotcom.github.io/Uncertainty-Aware-Robotic-World-Model-Go2/
+site_description: Engineering and validation documentation for offline uncertainty-aware model-based RL on the Unitree Go2.
 
 theme:
   name: material
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
   features:
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
-    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    - toc.follow
     - content.code.copy
+    - content.code.annotate
     - search.highlight
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Home: index.md
-
   - Project:
       - Overview: project/overview.md
       - Repository Structure: project/repository-structure.md
       - Current Status: project/current-status.md
       - Roadmap: project/roadmap.md
-
   - Setup:
       - Local Environment: setup/local-environment.md
       - Hardware and System Specs: setup/hardware-and-system-specs.md
       - Lab Workstation Notes: setup/lab-workstation-notes.md
-
   - Validation:
       - Baseline Execution: validation/baseline-execution.md
       - World-Model Pretraining Check: validation/world-model-pretraining-check.md
       - Checkpoint and Finetune Status: validation/checkpoint-and-finetune-status.md
       - RWM-U Execution Check: validation/rwm-u-execution-check.md
       - Reproduction Status: validation/reproduction-status.md
-      - "Phase 4A — Lab workstation": validation/phase-4a-lab-validation.md
-      - "Phase 4B — Go2 scaffold":    validation/phase-4b-go2-scaffold.md
-      - "Phase 4C — Go2 gait, MBPO, RWM-U setup": validation/phase-4c-go2-gait-mbpo-rwmu.md
-      - "Phase 4D — Online collapse and the offline pivot": validation/phase-4d-online-collapse-and-pivot.md
-      - "Phase 4E — Offline pipeline, eval harness, ANYmal gate": validation/phase-4e-offline-pipeline-and-anymal-gate.md
-      - "Phase 4F — Curated WM, freeze bug, offline walker": validation/phase-4f-curated-wm-and-offline-walker.md
+      - "Phase 4A: Lab workstation": validation/phase-4a-lab-validation.md
+      - "Phase 4B: Go2 scaffold": validation/phase-4b-go2-scaffold.md
+      - "Phase 4C: Go2 gait, MBPO, RWM-U setup": validation/phase-4c-go2-gait-mbpo-rwmu.md
+      - "Phase 4D: Online collapse and the offline pivot": validation/phase-4d-online-collapse-and-pivot.md
+      - "Phase 4E: Offline pipeline, eval harness, ANYmal gate": validation/phase-4e-offline-pipeline-and-anymal-gate.md
+      - "Phase 4F: Curated WM, freeze bug, offline walker": validation/phase-4f-curated-wm-and-offline-walker.md
+      - "Phase 4G: Uncertainty calibration (headline result)": validation/phase-4g-uncertainty-calibration.md
       - "Engineering Findings and Confounds": validation/engineering-findings.md
-
   - Robotic World Model:
       - Task Modes: world-model/task-modes.md
       - Runtime Pipeline: world-model/runtime-pipeline.md
@@ -44,15 +72,12 @@ nav:
       - Implementation Analysis: world-model/implementation-analysis.md
       - Paper-to-Code Synthesis: world-model/paper-to-code-synthesis.md
       - Relationship to Uncertainty-Aware RWM: world-model/relationship-to-uncertainty-aware.md
-
   - Uncertainty-Aware Robotic World Model:
       - Paper Analysis: uncertainty-aware-world-model/paper-analysis.md
       - Implementation Analysis: uncertainty-aware-world-model/implementation-analysis.md
       - Paper-to-Code Synthesis: uncertainty-aware-world-model/paper-to-code-synthesis.md
-
   - Go2 Transfer:
       - Inventory: go2-transfer/go2-inventory.md
-
   - Development:
       - Submodules and Forks: development/submodules-and-forks.md
 
@@ -61,6 +86,8 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - tables
+  - footnotes
+  - pymdownx.details
   - toc:
       permalink: true
   - pymdownx.highlight:
@@ -74,6 +101,9 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

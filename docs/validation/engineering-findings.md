@@ -1,12 +1,12 @@
 # Engineering Findings, Confounds, and Threats to Validity
 
-*Cross-cutting page. These findings span Phases 4D–4F and are collected here because each is reusable
-beyond the run that produced it — three are bugs whose diagnosis is itself a result, and the rest is the
+*Cross-cutting page. These findings span Phases 4D-4F and are collected here because each is reusable
+beyond the run that produced it, three are bugs whose diagnosis is itself a result, and the rest is the
 confound ledger a faithful reproduction must surface.*
 
 ---
 
-## Bug #1 — policy optimized against an untrained world model
+## Bug #1: policy optimized against an untrained world model
 
 **Symptom.** The first Go2 offline policy runs, and the first penalty sweep, produced uniform meaningless
 collapse regardless of penalty value.
@@ -14,19 +14,19 @@ collapse regardless of penalty value.
 **Root cause.** The offline trainer (`model_based/train.py`) **builds** the `SystemDynamicsEnsemble` and
 **loads** it from `resume_path`; it never *fits* a world model. The Go2 config had no Go2 world model to
 load, so the policy was being optimized against a freshly-initialized (random) ensemble. A MOPO penalty
-on a random ensemble penalizes disagreement *everywhere* — hence the uniform collapse.
+on a random ensemble penalizes disagreement *everywhere*, hence the uniform collapse.
 
 **Fix.** Added a `--wm-checkpoint` override; reframed "produce a Go2 world model" as a required, separate
-step (extract from online pretrain, or fit offline — Phase 4F took the fit route). The early penalty
+step (extract from online pretrain, or fit offline, Phase 4F took the fit route). The early penalty
 sweep was discarded.
 
 **Lesson.** Confirm what a pipeline *loads* from its resolved config, not what the launch command implies
-— the same class of error as the Phase 4C "wrong pretrain silently loaded" bug. A green run against a
+- the same class of error as the Phase 4C "wrong pretrain silently loaded" bug. A green run against a
 random model looks exactly like a real experiment until you check the checkpoint provenance.
 
 ---
 
-## Bug #2 — normalizer-consistency freeze
+## Bug #2: normalizer-consistency freeze
 
 **Symptom.** The first policy run against the *fitted* curated world model froze: imagined episode length
 pinned at exactly **1.00** for all 500 iterations, every env, zero variance.
@@ -35,16 +35,16 @@ pinned at exactly **1.00** for all 500 iterations, every env, zero variance.
 data), and the imagination loop runs in that normalized space. But `fit_world_model.py` trained the WM on
 **raw** values. At deployment the WM was fed normalized inputs it had never seen; every head misfired; the
 termination gate fired on step 1 of every imagined episode; episode length pinned at 1. The measured
-`s_std[:3] ≈ [0.42, 0.43, 0.19]` means those state dims were amplified 2–5× at deployment — the misfire,
+`s_std[:3] ≈ [0.42, 0.43, 0.19]` means those state dims were amplified 2-5× at deployment, the misfire,
 quantified.
 
-**Why it hid.** Both the fit and the held-out validation ran in *raw* space — internally consistent, so
+**Why it hid.** Both the fit and the held-out validation ran in *raw* space, internally consistent, so
 neither could see the mismatch. Only *deployment* ran in normalized space, and nothing tested deployment
 space. The methodology hole was the absence of a deployment-space check, not the bug itself.
 
 **Fix.** Z-score state/action in the fit using mean/std from the same CSV (contact/termination left raw);
 point the Go2 config's `dataset_folder` at the curated data so the deployment normalizer is computed from
-the same rows. All three surfaces — fit, deployment normalizer, imagination resets — then read identical
+the same rows. All three surfaces, fit, deployment normalizer, imagination resets, then read identical
 data in identical space.
 
 **Lesson.** The shape of a failure is diagnostic: a flat, zero-variance value is mechanical (a mismatch),
@@ -53,15 +53,15 @@ have re-frozen at 1.00 for days.
 
 ---
 
-## The metric that lied — `error_vel_xy` flatters non-movers
+## The metric that lied: `error_vel_xy` flatters non-movers
 
 `error_vel_xy` (an IsaacLab command-manager metric) reported ~0.216 for a policy whose true tracking
-reward was ~0.015 — mathematically incompatible under the reward's smooth exponential. The velocity trace
+reward was ~0.015, mathematically incompatible under the reward's smooth exponential. The velocity trace
 (cmd vs actual base-frame speed + correlation) showed the policy standing at ~0.03 m/s against a ~0.75
 command, `corr ~0`. `error_vel_xy`'s mean is depressed by the standing-command fraction and resample
 timing, so it under-reports the error of a non-mover.
 
-**Standing rule.** Tracking is judged by cmd-vs-actual speed and correlation from the velocity trace —
+**Standing rule.** Tracking is judged by cmd-vs-actual speed and correlation from the velocity trace -
 **not** by `error_vel_xy` or the logged `track_lin_vel_xy_exp` column. A known-good walker (`ens5`) reads
 correctly through the trace (actual 0.669 / cmd 0.709, `corr +0.98`), which is how the harness itself was
 validated.
@@ -94,10 +94,10 @@ is too narrow":
 > WM (Phase 4E ANYmal gate).
 
 - If our-WM ANYmal lands near 0.417 and is seed-robust → our WM-fitting pipeline is sound, and the Go2
-  weakness is purely a **data-coverage** problem → the fix is the diverse-data rebuild
-  (random/medium/expert behavior policies, Paper 2's recipe).
+ weakness is purely a **data-coverage** problem → the fix is the diverse-data rebuild
+ (random/medium/expert behavior policies, Paper 2's recipe).
 - If our-WM ANYmal is also weak/fragile → our WM **fit itself** differs from theirs, and no Go2 data will
-  fix it → a different fix entirely.
+ fix it → a different fix entirely.
 
 One ~90-minute fit plus a couple of trace evals decides which world we are in, *before* committing days to
 a Go2 data rebuild. Minor prerequisite: `fit_world_model.py` currently hardcodes the Go2 config and must
@@ -107,13 +107,13 @@ be pointed at ANYmal's dims/config (a small edit, not a rewrite).
 
 ## Process lessons carried through the campaign
 
-- **Verify the loaded/resolved config before every run** — both bugs above, and the Phase 4C
-  wrong-pretrain bug, were checkpoint/config provenance failures.
-- **The container has no `python3`/`python`** on PATH — always `/isaac-sim/python.sh`; the offline fit and
-  trace are pure-PyTorch but still launch through it.
-- **`PYTHONUNBUFFERED=1`** for detached runs — Isaac's `simulation_app.close()` hard-exits without
-  flushing Python's stdout, so buffered summaries are otherwise lost.
-- **Shared multi-tenant GPU** — `nvidia-smi` before every launch; the container periodically loses GPU
-  visibility (NVML cgroup revocation), fixed by `docker restart` (bind mounts preserve all data).
-- **Judge by aggregate metrics and the trace, never one rendered clip** — the render camera follows env 0
-  and can show a stable rollout while the distribution collapses.
+- **Verify the loaded/resolved config before every run**: both bugs above, and the Phase 4C
+ wrong-pretrain bug, were checkpoint/config provenance failures.
+- **The container has no `python3`/`python`** on PATH, always `/isaac-sim/python.sh`; the offline fit and
+ trace are pure-PyTorch but still launch through it.
+- **`PYTHONUNBUFFERED=1`** for detached runs, Isaac's `simulation_app.close()` hard-exits without
+ flushing Python's stdout, so buffered summaries are otherwise lost.
+- **Shared multi-tenant GPU**: `nvidia-smi` before every launch; the container periodically loses GPU
+ visibility (NVML cgroup revocation), fixed by `docker restart` (bind mounts preserve all data).
+- **Judge by aggregate metrics and the trace, never one rendered clip**: the render camera follows env 0
+ and can show a stable rollout while the distribution collapses.

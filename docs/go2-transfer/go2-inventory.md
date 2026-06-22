@@ -109,8 +109,8 @@ Durable values confirmed during Phase 4C:
 
 ```text
 effort_limit = 23.5
-stiffness    = 25.0
-damping      = 0.5
+stiffness = 25.0
+damping = 0.5
 ```
 
 
@@ -121,19 +121,19 @@ The Go2 RWM system state is 45-dimensional.
 Layout:
 
 ```text
-0:3     base linear velocity
-3:6     base angular velocity
-6:9     projected gravity
-9:21    joint positions, 12 dims
-21:33   joint velocities, 12 dims
-33:45   joint torques, 12 dims
+0:3 base linear velocity
+3:6 base angular velocity
+6:9 projected gravity
+9:21 joint positions, 12 dims
+21:33 joint velocities, 12 dims
+33:45 joint torques, 12 dims
 ```
 
 Summary:
 
 ```text
 system_state_dim = 45
-action_dim       = 12
+action_dim = 12
 ```
 
 This matches the Go2 RWM config family and the world-model state index dictionary.
@@ -142,17 +142,17 @@ Important implication: the 45-dimensional shape matches ANYmal-D-style locomotio
 
 ## Normalizer decision
 
-Do not reuse ANYmal-D normalizer values — and in practice, use identity normalizers for the current Go2 RWM/RWM-U pipeline.
+Do not reuse ANYmal-D normalizer values, and in practice, use identity normalizers for the current Go2 RWM/RWM-U pipeline.
 
 The original concern remains valid: state-normalizer means/stds are index-dependent. For example, `system_state[9]` refers to a specific Go2 joint, not necessarily the same physical joint as in ANYmal-D. Therefore ANYmal-D normalizer statistics must not be copied to Go2.
 
 Resolved in Phase 4C: the Go2 RWM pipeline uses identity normalizers throughout:
 
 ```text
-state_normalizer.mean  = 0
-state_normalizer.std   = 1
+state_normalizer.mean = 0
+state_normalizer.std = 1
 action_normalizer.mean = 0
-action_normalizer.std  = 1
+action_normalizer.std = 1
 ```
 
 This is position-agnostic and matches the world model actually trained during Go2 pretraining, as confirmed in each run's `params/agent.yaml`.
@@ -200,7 +200,7 @@ Interpretation:
 
 ## RWM Go2 config family
 
-Status as of Phase 4B–4C: created and validated.
+Status as of Phase 4B-4C: created and validated.
 
 The Go2 RWM config family is registered for:
 
@@ -239,19 +239,19 @@ A usable Go2 RWM pretrain was obtained with the Phase 4C reward patch.
 Accepted pretrain:
 
 ```text
-run:        2026-06-12_09-07-38_pretrain
+run: 2026-06-12_09-07-38_pretrain
 checkpoint: model_2000.pt
-reward:     feet_slide = -0.25
+reward: feet_slide = -0.25
 ```
 
 Approximate accepted metrics:
 
 ```text
-base_contact         ≈ 0.02
-episode_length       ≈ 982
-error_vel_xy         ≈ 0.20
-feet_slide reward    ≈ -0.06
-visual gait          acceptable / upright / non-belly-skating
+base_contact ≈ 0.02
+episode_length ≈ 982
+error_vel_xy ≈ 0.20
+feet_slide reward ≈ -0.06
+visual gait acceptable / upright / non-belly-skating
 ```
 
 This is the clean single-model RWM pretrain baseline.
@@ -263,28 +263,28 @@ A valid plain MBPO finetune was run from the accepted pretrain.
 Plain MBPO negative-control run:
 
 ```text
-run:        2026-06-12_11-07-01_finetune
-pretrain:   2026-06-12_09-07-38_pretrain/model_2000.pt
-ensemble:   1
-penalty:    uncertainty_penalty_weight = -0.0
+run: 2026-06-12_11-07-01_finetune
+pretrain: 2026-06-12_09-07-38_pretrain/model_2000.pt
+ensemble: 1
+penalty: uncertainty_penalty_weight = -0.0
 ```
 
 Important scalar confirmations:
 
 ```text
-Imagination/feet_slide              = 0
-Model Based/epistemic_uncertainty   = 0
+Imagination/feet_slide = 0
+Model Based/epistemic_uncertainty = 0
 Model Based/num_valid_imagination_envs = 8192
 ```
 
 Final aggregate metrics showed substantial degradation relative to the pretrain:
 
 ```text
-Train/mean_reward                  ≈ 8.11
-Train/mean_episode_length          ≈ 607.65
-Episode_Termination/base_contact   ≈ 0.30 final, often 0.38–0.50 near the end
+Train/mean_reward ≈ 8.11
+Train/mean_episode_length ≈ 607.65
+Episode_Termination/base_contact ≈ 0.30 final, often 0.38-0.50 near the end
 Episode_Reward/track_lin_vel_xy_exp ≈ 0.50
-Episode_Reward/feet_slide          ≈ -0.225
+Episode_Reward/feet_slide ≈ -0.225
 ```
 
 Interpretation:
@@ -312,7 +312,7 @@ Runtime fix:
 
 ```python
 if term not in self.imagination_reward_per_step:
-    continue
+ continue
 ```
 
 Patched file:
@@ -346,10 +346,10 @@ The clean RWM-U comparison requires an ensemble world model.
 Current ensemble pretrain:
 
 ```text
-run:        2026-06-12_13-39-03_pretrain_ens5
-ensemble:   5
-run_name:   pretrain_ens5
-penalty:    uncertainty_penalty_weight = -0.0
+run: 2026-06-12_13-39-03_pretrain_ens5
+ensemble: 5
+run_name: pretrain_ens5
+penalty: uncertainty_penalty_weight = -0.0
 ```
 
 Purpose:
@@ -384,20 +384,20 @@ Shared setup:
 
 ```text
 pretrain checkpoint: 2026-06-12_13-39-03_pretrain_ens5/model_2000.pt
-ensemble_size:       5
+ensemble_size: 5
 feet_slide handling: real-only / skipped in imagination
-normalizers:         identity
-max_iterations:      same for both arms
+normalizers: identity
+max_iterations: same for both arms
 ```
 
-Arm A — ensemble-5 without uncertainty penalty:
+Arm A, ensemble-5 without uncertainty penalty:
 
 ```text
 run_name = "finetune_ens5_pen0"
 uncertainty_penalty_weight = -0.0
 ```
 
-Arm B — RWM-U method:
+Arm B, RWM-U method:
 
 ```text
 run_name = "finetune_ens5_pen1"
