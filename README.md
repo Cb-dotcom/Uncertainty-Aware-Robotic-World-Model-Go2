@@ -35,7 +35,7 @@ The relationship between the two papers maps onto two separate pipelines in the 
 
 ## Current state
 
-The project has moved from reproduction into a contribution. The offline RWM-U and MOPO-PPO pipeline has been exercised end-to-end on both ANYmal-D (as a validation gate) and the Unitree Go2 (the contribution target). Two root-cause bugs were found and fixed along the way: a policy that was optimized against an untrained world model, and a normalizer inconsistency that froze the imagined rollout. The headline result concerns uncertainty calibration: on a light, contact-dominated quadruped, broadening the offline dataset improves world-model prediction while flattening the ensemble disagreement that the MOPO penalty relies on, so the bottleneck is calibration of the uncertainty signal rather than data volume. The full analysis is on the documentation site.
+The project has moved from reproduction into a contribution, and is ongoing. The offline RWM-U and MOPO-PPO pipeline has been exercised end-to-end on both ANYmal-D (as a validation gate) and the Unitree Go2 (the contribution target). On the online side, MBPO-PPO reproduces the paper at its operating budget on Go2 (best-checkpoint tracking around 0.92 against the paper's 0.90); the documented model-exploitation regime appears only when the loop is run far past that budget, which is the behaviour the paper sidesteps by early checkpoint selection. Two root-cause bugs were found and fixed along the way: a policy that was optimized against an untrained world model, and a normalizer inconsistency that froze the imagined rollout. The headline result concerns uncertainty calibration: on a light, contact-dominated quadruped, broadening the offline dataset improves world-model prediction while flattening the ensemble disagreement that the MOPO penalty relies on, so the bottleneck is calibration of the uncertainty signal rather than data volume. Two control experiments bound what is achievable: a reward-support proxy reduces sliding only by freezing locomotion, and warm-starting from a competent policy is locally non-destructive but yields no measurable refinement. The path to a deployable, hardware-ready offline policy therefore runs through the uncertainty architecture (independent or diversity-regularized ensembles, better-calibrated estimators, and forward-kinematics reward support) rather than through more data. The full analysis is on the documentation site.
 
 ## Documentation
 
@@ -53,7 +53,7 @@ It contains the project status, hardware and environment setup notes, the phase-
 - [x] Paper-to-code synthesis pages for both RWM and RWM-U completed.
 - [x] Cross-paper relationship page (RWM to RWM-U) completed.
 - [x] Migration to the lab workstation completed and validated.
-- [x] Online RWM and MBPO-PPO exercised on Go2; the gait scoot fixed; online model exploitation characterized.
+- [x] Online RWM and MBPO-PPO reproduced at the paper's budget on Go2 (tracking ~0.92 vs 0.90); the gait scoot fixed; the documented model-exploitation regime characterized only when the loop is run past that budget.
 - [x] Pivot to the offline RWM-U and MOPO-PPO method as the project direction.
 - [x] Offline Go2 pipeline and real-environment evaluation harness built.
 - [x] Bug 1 fixed: policy was being optimized against an untrained world model.
@@ -61,26 +61,33 @@ It contains the project status, hardware and environment setup notes, the phase-
 - [x] ANYmal fitter gate: the standalone fitter converges and strict-loads the reference module.
 - [x] Exploit-rollout uncertainty diagnostic built and run on real policy-failure traces.
 - [x] Headline finding established: coverage improves prediction while flattening the MOPO disagreement signal (calibration, not volume), with the prediction-error versus disagreement decoupling replicated across two traces.
-- [ ] Stage-Mixed experiment: whether PPO-replay behavioral diversity restores selective uncertainty.
+- [x] Stage-Mixed experiment: PPO-replay diversity decorrelates the ensemble heads (cosine 0.965 to 0.850) but does not beat the curated model on selectivity.
 
-For per-claim reproduction status, see the [Reproduction Status](https://cb-dotcom.github.io/Uncertainty-Aware-Robotic-World-Model-Go2/validation/reproduction-status/) page.
+### Remaining
+
+- [ ] Lift the disagreement ceiling and recalibrate the signal by fitting an ANYmal world model with our own multi-member trainer as the gating check, then move to independent or diversity-regularized ensemble trunks and a better-calibrated estimator.
+- [ ] Restore observable reward support and adopt warm-start as the deployment recipe: add forward-kinematics targets so the foot-slide term is penalizable in imagination, and validate a morphology-aware reward online.
+- [ ] Deploy the resulting offline RWM-U policy on Go2 hardware.
+- [ ] Contribute and publish the result.
 
 ## Repository structure
 
 ```text
 .
 ├── docs/                       Published project documentation
+├── lab/                        Lab-workstation setup and run configuration
+├── logs/                       Training and evaluation run outputs
 ├── manifests/                  Frozen environment and state records
 ├── scripts/                    Local setup and validation scripts
 ├── upstream/
 │   ├── IsaacLab/               Isaac Lab source, kept aligned with upstream
 │   ├── robotic_world_model/    Task, environment, and config code
 │   └── rsl_rl_rwm/             RSL-RL backend with world-model extensions
-├── .github/workflows/
 ├── .gitignore
 ├── .gitmodules
 ├── mkdocs.yml                  Documentation site configuration
-└── README.md
+├── README.md
+└── requirements-lab.txt        Lab-workstation Python dependencies
 ```
 
 ## Cloning
