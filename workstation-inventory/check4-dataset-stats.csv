@@ -1,0 +1,19 @@
+file,rows,terms,terms_per_1k,tilted_frac(gz>-0.8),fallen_frac(gz>-0.3),mean_speed_xy,mean_abs_action
+upstream/robotic_world_model/assets/data/go2_noise/state_action_data_0.csv,115000,177,1.539,0.0530,0.0376,0.539,1.229
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/bad_0617_ckpt1000_n00.csv,51200,0,0.000,0.0000,0.0000,0.037,2.099
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/bad_0617_ckpt250_n00.csv,51200,0,0.000,0.0000,0.0000,0.049,0.970
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/bad_0617_ckpt500_n00.csv,51200,2,0.039,0.0016,0.0013,0.042,1.501
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/ckpt1000_n08.csv,96000,46,0.479,0.0162,0.0107,0.351,1.172
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/ckpt2000_n08.csv,96000,134,1.396,0.0488,0.0354,0.532,1.187
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/ckpt750_n08.csv,96000,4,0.042,0.0019,0.0013,0.211,1.144
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/expert_0612_ckpt1500_n00.csv,76800,1,0.013,0.0011,0.0008,0.724,0.886
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/expert_0612_ckpt2000_n00.csv,76800,9,0.117,0.0042,0.0028,0.722,1.037
+Traceback (most recent call last):
+  File "/workspace/Uncertainty-Aware-Robotic-World-Model-Go2/workstation-inventory/dataset_stats.py", line 7, in <module>
+    if not np.issubdtype(df.dtypes.iloc[0], np.number):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/isaac-sim/extscache/omni.kit.pip_archive-0.0.0+8131b85d.lx64.cp311/pip_prebundle/numpy/core/numerictypes.py", line 417, in issubdtype
+    arg1 = dtype(arg1).type
+           ^^^^^^^^^^^
+TypeError: Cannot interpret '<StringDtype(storage='python', na_value=nan)>' as a data type
+There was an error running python

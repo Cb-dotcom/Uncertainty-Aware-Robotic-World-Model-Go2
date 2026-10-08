@@ -1,0 +1,37 @@
+== isaac sim
+5.0.0-rc.45+release.23960.184afb15.gl== plus_fail folder
+total 84
+drwxr-xr-x  2 root root 4096 Jun 21 23:08 .
+drwxr-xr-x 15 root root 4096 Jun 21 23:08 ..
+lrwxrwxrwx  1 root root  153 Jun 21 23:08 bad_0617_ckpt1000_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/bad_0617_ckpt1000_n00.csv
+lrwxrwxrwx  1 root root  152 Jun 21 23:08 bad_0617_ckpt250_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/bad_0617_ckpt250_n00.csv
+lrwxrwxrwx  1 root root  152 Jun 21 23:08 bad_0617_ckpt500_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/bad_0617_ckpt500_n00.csv
+lrwxrwxrwx  1 root root  154 Jun 21 23:08 ckpt1000_n08.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/failure_supplement_clean_train/ckpt1000_n08.csv
+lrwxrwxrwx  1 root root  154 Jun 21 23:08 ckpt2000_n08.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/failure_supplement_clean_train/ckpt2000_n08.csv
+lrwxrwxrwx  1 root root  153 Jun 21 23:08 ckpt750_n08.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/failure_supplement_clean_train/ckpt750_n08.csv
+lrwxrwxrwx  1 root root  156 Jun 21 23:08 expert_0612_ckpt1500_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/expert_0612_ckpt1500_n00.csv
+lrwxrwxrwx  1 root root  156 Jun 21 23:08 expert_0612_ckpt2000_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/expert_0612_ckpt2000_n00.csv
+-rw-r--r--  1 root root 2231 Jun 21 23:08 manifest.csv
+lrwxrwxrwx  1 root root  156 Jun 21 23:08 medium_0612_ckpt1000_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/medium_0612_ckpt1000_n00.csv
+lrwxrwxrwx  1 root root  156 Jun 21 23:08 medium_0612_ckpt1000_n02.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/medium_0612_ckpt1000_n02.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 medium_0612_ckpt750_n00.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/medium_0612_ckpt750_n00.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 medium_0612_ckpt750_n02.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/medium_0612_ckpt750_n02.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 mixed_0612_ckpt1000_n04.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/mixed_0612_ckpt1000_n04.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 mixed_0612_ckpt1500_n02.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/mixed_0612_ckpt1500_n02.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 mixed_0612_ckpt2000_n02.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/mixed_0612_ckpt2000_n02.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 mixed_0612_ckpt2000_n04.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/mixed_0612_ckpt2000_n04.csv
+lrwxrwxrwx  1 root root  155 Jun 21 23:08 mixed_0612_ckpt2000_n08.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/mixed_0612_ckpt2000_n08.csv
+lrwxrwxrwx  1 root root  154 Jun 21 23:08 mixed_0612_ckpt750_n04.csv -> /workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_clean_terms/mixed_0612_ckpt750_n04.csv
+== go2_noise folder
+total 277468
+drwxr-xr-x 2 root root     4096 Jun 20 22:27 .
+drwxr-xr-x 7 root root     4096 Jun 22 06:46 ..
+-rw-r--r-- 1 root root  6619314 Jun 18 19:29 seg_n00.csv
+-rw-r--r-- 1 root root  6614523 Jun 18 19:31 seg_n02.csv
+-rw-r--r-- 1 root root  9862487 Jun 18 19:33 seg_n04.csv
+-rw-r--r-- 1 root root 19566695 Jun 18 19:38 seg_n08.csv
+-rw-r--r-- 1 root root 16229978 Jun 19 09:46 seg_n10.csv
+-rw-r--r-- 1 root root 16173512 Jun 19 09:50 seg_n12.csv
+-rw-r--r-- 1 root root 75066509 Jun 20 22:27 state_action_data_0.csv
+-rw-r--r-- 1 root root 58892997 Jun 19 14:57 state_action_data_heldout_train.csv
+-rw-r--r-- 1 root root 75066509 Jun 19 10:12 state_action_data_noise.csv
