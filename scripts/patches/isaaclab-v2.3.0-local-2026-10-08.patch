@@ -1,0 +1,50 @@
+diff --git a/scripts/reinforcement_learning/rsl_rl/play.py b/scripts/reinforcement_learning/rsl_rl/play.py
+index 11ef73994..17d02e430 100644
+--- a/scripts/reinforcement_learning/rsl_rl/play.py
++++ b/scripts/reinforcement_learning/rsl_rl/play.py
+@@ -90,6 +90,15 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
+     # override configurations with non-hydra CLI arguments
+     agent_cfg: RslRlBaseRunnerCfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
+     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
++    env_cfg.commands.base_velocity.heading_command = False
++    env_cfg.commands.base_velocity.ranges.lin_vel_x = (0.6, 0.6)
++    env_cfg.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
++    env_cfg.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
++    env_cfg.viewer.origin_type = "asset_root"
++    env_cfg.viewer.asset_name = "robot"
++    env_cfg.viewer.env_index = 0
++    env_cfg.viewer.eye = (-2.0, 1.5, 0.8)
++    env_cfg.viewer.lookat = (0.0, 0.0, 0.2)
+ 
+     # set the environment seed
+     # note: certain randomizations occur in the environment initialization so we set the seed here
+diff --git a/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/rough_env_cfg.py b/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/rough_env_cfg.py
+index 22fb69cff..9942d8a6c 100644
+--- a/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/rough_env_cfg.py
++++ b/source/isaaclab_tasks/isaaclab_tasks/manager_based/locomotion/velocity/config/go2/rough_env_cfg.py
+@@ -4,8 +4,10 @@
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+ from isaaclab.utils import configclass
++from isaaclab.managers import RewardTermCfg as RewTerm, SceneEntityCfg
+ 
+ from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import LocomotionVelocityRoughEnvCfg
++from isaaclab_tasks.manager_based.locomotion.velocity import mdp
+ 
+ ##
+ # Pre-defined configs
+@@ -51,6 +53,14 @@ class UnitreeGo2RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
+         # rewards
+         self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
+         self.rewards.feet_air_time.weight = 0.01
++        self.rewards.feet_slide = RewTerm(
++            func=mdp.feet_slide,
++            weight=-0.25,
++            params={
++                "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
++                "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
++            },
++        )
+         self.rewards.undesired_contacts = None
+         self.rewards.dof_torques_l2.weight = -0.0002
+         self.rewards.track_lin_vel_xy_exp.weight = 1.5
