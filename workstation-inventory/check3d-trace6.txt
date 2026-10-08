@@ -1,0 +1,34 @@
+[score] wm=/workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/go2_curated_wm.pt
+[score] valid fall transitions=13
+[score] valid pre1 transitions=13
+[score] valid pre5 transitions=13
+\n=== epistemic uncertainty: transition into failure vs walking ===
+ratio mean fall/walking = 5.898
+ROC-AUC epi(fall > walking) = 0.979
+\n=== epistemic uncertainty: one step before failure ===
+ratio mean pre1/walking = 4.609
+ROC-AUC epi(pre1 > walking) = 0.973
+\n=== epistemic uncertainty: five steps before failure ===
+ratio mean pre5/walking = 4.608
+ROC-AUC epi(pre5 > walking) = 0.969
+\n=== aleatoric uncertainty ===
+ROC-AUC alea(fall > walking) = 0.955
+\n=== termination probability ===
+ROC-AUC term(fall > walking) = 0.997
+[score] wm=/workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/go2_plus_fail_ens5/model_2000.pt
+[score] valid fall transitions=13
+[score] valid pre1 transitions=13
+[score] valid pre5 transitions=13
+\n=== epistemic uncertainty: transition into failure vs walking ===
+ratio mean fall/walking = 1.165
+ROC-AUC epi(fall > walking) = 0.644
+\n=== epistemic uncertainty: one step before failure ===
+ratio mean pre1/walking = 1.087
+ROC-AUC epi(pre1 > walking) = 0.625
+\n=== epistemic uncertainty: five steps before failure ===
+ratio mean pre5/walking = 1.136
+ROC-AUC epi(pre5 > walking) = 0.636
+\n=== aleatoric uncertainty ===
+ROC-AUC alea(fall > walking) = 0.544
+\n=== termination probability ===
+ROC-AUC term(fall > walking) = 0.971
