@@ -4,9 +4,9 @@ print("file,rows,terms,terms_per_1k,tilted_frac(gz>-0.8),fallen_frac(gz>-0.3),me
 for pat in sys.argv[1:]:
     for f in sorted(glob.glob(pat)):
         df = pd.read_csv(f, header=None, low_memory=False)
-        if not np.issubdtype(df.dtypes.iloc[0], np.number):
+        if not all(pd.api.types.is_numeric_dtype(t) for t in df.dtypes):
             df = pd.read_csv(f, low_memory=False)
-        a = df.to_numpy(dtype=np.float32)
+        df = df.apply(pd.to_numeric, errors="coerce"); print("#", os.path.basename(f), "cols", df.shape[1], "nan_rows", int(df.isna().any(axis=1).sum()), flush=True); a = df.to_numpy(dtype=np.float32)
         if a.shape[1] != 66: print(f"{f},SKIP cols={a.shape[1]}"); continue
         gz = a[:, 8]; v = np.linalg.norm(a[:, 0:2], axis=1); t = a[:, 65] > 0.5
         print(f"{os.path.relpath(f)},{len(a)},{int(t.sum())},{1000*t.mean():.3f},{(gz>-0.8).mean():.4f},{(gz>-0.3).mean():.4f},{v.mean():.3f},{np.abs(a[:,45:57]).mean():.3f}", flush=True)

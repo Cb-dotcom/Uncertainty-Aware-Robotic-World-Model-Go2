@@ -17,3 +17,40 @@ Traceback (most recent call last):
            ^^^^^^^^^^^
 TypeError: Cannot interpret '<StringDtype(storage='python', na_value=nan)>' as a data type
 There was an error running python
+file,rows,terms,terms_per_1k,tilted_frac(gz>-0.8),fallen_frac(gz>-0.3),mean_speed_xy,mean_abs_action
+# manifest.csv cols 12 nan_rows 18
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/manifest.csv,SKIP cols=12
+# medium_0612_ckpt1000_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/medium_0612_ckpt1000_n00.csv,76800,5,0.065,0.0128,0.0017,0.404,1.402
+# medium_0612_ckpt1000_n02.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/medium_0612_ckpt1000_n02.csv,76800,3,0.039,0.0031,0.0009,0.475,1.244
+# medium_0612_ckpt750_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/medium_0612_ckpt750_n00.csv,76800,0,0.000,0.0002,0.0000,0.133,1.596
+# medium_0612_ckpt750_n02.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/medium_0612_ckpt750_n02.csv,76800,0,0.000,0.0006,0.0003,0.142,1.569
+# mixed_0612_ckpt1000_n04.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/mixed_0612_ckpt1000_n04.csv,64000,5,0.078,0.0028,0.0017,0.427,1.194
+# mixed_0612_ckpt1500_n02.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/mixed_0612_ckpt1500_n02.csv,64000,2,0.031,0.0015,0.0010,0.715,0.898
+# mixed_0612_ckpt2000_n02.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/mixed_0612_ckpt2000_n02.csv,64000,1,0.016,0.0006,0.0005,0.719,1.033
+# mixed_0612_ckpt2000_n04.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/mixed_0612_ckpt2000_n04.csv,64000,7,0.109,0.0039,0.0029,0.681,1.049
+# mixed_0612_ckpt2000_n08.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/mixed_0612_ckpt2000_n08.csv,65600,82,1.250,0.0450,0.0335,0.522,1.177
+# mixed_0612_ckpt750_n04.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_pilot_1m/segments_plus_fail_train_flat/mixed_0612_ckpt750_n04.csv,64000,1,0.016,0.0004,0.0003,0.176,1.301
+# manifest.csv cols 3 nan_rows 6
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/manifest.csv,SKIP cols=3
+# stage1000_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/stage1000_n00.csv,166400,72,0.433,0.0069,0.0012,0.464,1.274
+# stage1500_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/stage1500_n00.csv,166400,72,0.433,0.0022,0.0011,0.719,0.887
+# stage2000_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/stage2000_n00.csv,166400,81,0.487,0.0035,0.0023,0.712,1.035
+# stage250_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/stage250_n00.csv,166400,64,0.385,0.0000,0.0000,0.046,1.049
+# stage500_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/stage500_n00.csv,166400,68,0.409,0.0233,0.0050,0.053,1.512
+# stage750_n00.csv cols 66 nan_rows 0
+upstream/robotic_world_model/assets/data/go2_true_mixed_1m_stage_rollout/stage750_n00.csv,166400,67,0.403,0.0018,0.0007,0.116,1.563
