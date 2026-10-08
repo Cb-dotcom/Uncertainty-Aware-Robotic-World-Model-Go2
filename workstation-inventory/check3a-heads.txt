@@ -1,0 +1,20 @@
+
+Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/assets/models/pretrain_rnn_ens.pt
+  top-level keys: ['model_state_dict', 'system_dynamics_state_dict', 'optimizer_state_dict', 'system_dynamics_optimizer_state_dict', 'iter', 'infos']
+  state_heads: 5  auxiliary_heads: 5
+  params: state_base=636,672 one_state_head=77,492 aux_base=636,672 all_non_optim=2,075,850
+
+Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/go2_curated_wm.pt
+  top-level keys: ['system_dynamics_state_dict', 'iter', 'state_mean', 'state_std', 'action_mean', 'action_std', 'normalized']
+  state_heads: 5  auxiliary_heads: 5
+  params: state_base=636,672 one_state_head=77,492 aux_base=636,672 all_non_optim=1,995,683
+
+Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/go2_plus_fail_ens5/model_2000.pt
+  top-level keys: ['system_dynamics_state_dict', 'iter', 'state_mean', 'state_std', 'action_mean', 'action_std', 'normalized', 'segment_aware', 'total_rows', 'total_real_terms', 'num_windows']
+  state_heads: 5  auxiliary_heads: 5
+  params: state_base=636,672 one_state_head=77,492 aux_base=636,672 all_non_optim=1,995,683
+
+Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/anymal_reference_fitter_gate_ens1/model_2000.pt
+  top-level keys: ['system_dynamics_state_dict', 'iter', 'state_mean', 'state_std', 'action_mean', 'action_std', 'normalized']
+  state_heads: 1  auxiliary_heads: 1
+  params: state_base=636,672 one_state_head=77,492 aux_base=636,672 all_non_optim=1,417,903

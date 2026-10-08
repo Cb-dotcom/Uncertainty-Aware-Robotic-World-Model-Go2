@@ -1,0 +1,22 @@
+[score] normalized inputs to WM training space
+[score] wm=/workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/go2_plus_fail_ens5/model_2000.pt
+[score] trace=/workspace/Uncertainty-Aware-Robotic-World-Model-Go2/upstream/robotic_world_model/logs/wm_fit/go2_plus_fail_ens5/exploit_trace/2026-06-21_14-30-38_9_policy499_trace.csv
+[score] rows=64000 num_envs=64 steps_per_env=1000
+[score] H=32 raw_terms=89 seam_terms=64 interior_terms=25
+[score] valid fall transitions=25
+[score] valid pre1 transitions=25
+[score] valid pre5 transitions=25
+[score] negative candidates=61063 sampled=5000
+\n=== epistemic uncertainty: transition into failure vs walking ===
+ratio mean fall/walking = 1.478
+ROC-AUC epi(fall > walking) = 0.723
+\n=== epistemic uncertainty: one step before failure ===
+ratio mean pre1/walking = 1.130
+ROC-AUC epi(pre1 > walking) = 0.680
+\n=== epistemic uncertainty: five steps before failure ===
+ratio mean pre5/walking = 0.997
+ROC-AUC epi(pre5 > walking) = 0.649
+\n=== aleatoric uncertainty ===
+ROC-AUC alea(fall > walking) = 0.296
+\n=== termination probability ===
+ROC-AUC term(fall > walking) = 0.962
