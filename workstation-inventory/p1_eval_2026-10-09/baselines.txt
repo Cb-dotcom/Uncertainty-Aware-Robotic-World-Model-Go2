@@ -1,0 +1,20 @@
+
+== curated_t9: tie-aware AUC, pre5 / pre1 vs clean negatives  (n_pre5=25, n_neg=5000)
+|lin_vel|      pre5=0.939  pre1=0.829
+|ang_vel|      pre5=0.955  pre1=0.843
+tilt(1+g_z)    pre5=0.983  pre1=0.984
+|joint_vel|    pre5=0.976  pre1=0.976
+|torque|       pre5=0.027  pre1=0.017
+|action|       pre5=0.564  pre1=0.376
+epi(model)     pre5=0.972  pre1=0.986
+knn10          pre5=0.621  pre1=0.489
+
+== curated_t6: tie-aware AUC, pre5 / pre1 vs clean negatives  (n_pre5=13, n_neg=5000)
+|lin_vel|      pre5=0.360  pre1=0.383
+|ang_vel|      pre5=0.537  pre1=0.591
+tilt(1+g_z)    pre5=0.972  pre1=0.971
+|joint_vel|    pre5=0.958  pre1=0.926
+|torque|       pre5=0.033  pre1=0.026
+|action|       pre5=0.427  pre1=0.454
+epi(model)     pre5=0.970  pre1=0.974
+knn10          pre5=0.481  pre1=0.441
