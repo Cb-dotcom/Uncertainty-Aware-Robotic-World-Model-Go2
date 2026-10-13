@@ -1,0 +1,127 @@
+trace=../../../logs/wm_fit/go2_plus_fail_ens5/exploit_trace/2026-06-21_14-30-38_9_policy499_trace.csv rows=64000 H=32 clean windows used=2048 (envs 64)
+
+=== plusfail  (../../../logs/wm_fit/go2_plus_fail_ens5/model_2000.pt)  [score] normalized inputs to WM training space
+[B3] windows=2048 repeats=3  mean epi (zero start, all heads) = 0.7369
+[B3] head | shift = mean sum|train-start - zero-start| | shift/epi | 1-step MSE zero-start | 1-step MSE train-start
+[B3]   0  | 0.0000 | 0.000 | 0.02662 | 0.02662
+[B3]   1  | 0.4583 | 0.622 | 0.02655 | 0.02536
+[B3]   2  | 0.4812 | 0.653 | 0.02706 | 0.02557
+[B3]   3  | 0.4906 | 0.666 | 0.02882 | 0.02657
+[B3]   4  | 0.4741 | 0.643 | 0.02779 | 0.02596
+[B3] heads 1-4: mean shift/epi = 0.646; MSE zero/train = 1.065; head-0 MSE / heads 1-4 MSE (zero start) = 0.966
+[B3] shift by group (heads 1-4 mean): lin_vel=0.0240, ang_vel=0.0545, gravity=0.0262, joint_pos=0.0327, joint_vel=0.2109, torque=0.1276
+[B7] windows=2048 rollout K=24 (open loop, logged actions, one random head per window as in imagination)
+[B7] step | MSE warm | MSE cold | cold/warm | epi warm | epi cold | cold/warm | gravity MSE cold/warm
+[B7]    1 | 0.02719 | 0.25138 |   9.24 | 0.7369 | 3.3913 |   4.60 |   4.15
+[B7]    2 | 0.03185 | 0.35526 |  11.15 | 0.6508 | 1.4653 |   2.25 |  11.78
+[B7]    3 | 0.03780 | 0.35750 |   9.46 | 0.6464 | 0.5490 |   0.85 |  18.01
+[B7]    5 | 0.05420 | 0.41219 |   7.61 | 0.6347 | 0.3139 |   0.49 |   6.69
+[B7]    9 | 0.07815 | 0.38635 |   4.94 | 0.5726 | 0.4971 |   0.87 |   7.48
+[B7]   17 | 0.14979 | 0.36759 |   2.45 | 0.5392 | 0.5542 |   1.03 |   3.89
+[B7]   24 | 0.23539 | 0.45061 |   1.91 | 0.5404 | 0.5289 |   0.98 |   2.64
+[B7] mean over 24 steps: MSE cold/warm = 3.26; epi cold/warm = 1.17; cold stays within 10% of warm from step >24
+
+=== own_s0  (../../../logs/wm_fit/p1_refit_2026-10-09b/R2_ownnorm_seed0/model_2000.pt)  [score] normalized inputs to WM training space
+[B3] windows=2048 repeats=3  mean epi (zero start, all heads) = 0.4743
+[B3] head | shift = mean sum|train-start - zero-start| | shift/epi | 1-step MSE zero-start | 1-step MSE train-start
+[B3]   0  | 0.0000 | 0.000 | 0.03425 | 0.03425
+[B3]   1  | 0.6411 | 1.352 | 0.03563 | 0.03402
+[B3]   2  | 0.6717 | 1.416 | 0.03573 | 0.03446
+[B3]   3  | 0.7129 | 1.503 | 0.03662 | 0.03453
+[B3]   4  | 0.6865 | 1.447 | 0.03553 | 0.03400
+[B3] heads 1-4: mean shift/epi = 1.429; MSE zero/train = 1.047; head-0 MSE / heads 1-4 MSE (zero start) = 0.955
+[B3] shift by group (heads 1-4 mean): lin_vel=0.0569, ang_vel=0.0970, gravity=0.0316, joint_pos=0.0472, joint_vel=0.2744, torque=0.1709
+[B7] windows=2048 rollout K=24 (open loop, logged actions, one random head per window as in imagination)
+[B7] step | MSE warm | MSE cold | cold/warm | epi warm | epi cold | cold/warm | gravity MSE cold/warm
+[B7]    1 | 0.03565 | 0.22602 |   6.34 | 0.4743 | 4.1447 |   8.74 |  21.67
+[B7]    2 | 0.04383 | 0.50008 |  11.41 | 0.4261 | 1.2891 |   3.03 |  25.91
+[B7]    3 | 0.05062 | 0.50786 |  10.03 | 0.4203 | 0.5627 |   1.34 |  23.14
+[B7]    5 | 0.06365 | 0.54758 |   8.60 | 0.4180 | 0.4714 |   1.13 |  13.10
+[B7]    9 | 0.09293 | 0.54571 |   5.87 | 0.4190 | 0.4146 |   0.99 |  10.46
+[B7]   17 | 0.20431 | 0.49649 |   2.43 | 0.4157 | 0.3730 |   0.90 |   2.84
+[B7]   24 | 0.33677 | 0.49610 |   1.47 | 0.4193 | 0.3883 |   0.93 |   1.71
+[B7] mean over 24 steps: MSE cold/warm = 3.19; epi cold/warm = 1.43; cold stays within 10% of warm from step >24
+
+=== shared_s0  (../../../logs/wm_fit/p1_refit_2026-10-09/R2_plusfail/model_2000.pt)  [score] normalized inputs to WM training space
+[B3] windows=2048 repeats=3  mean epi (zero start, all heads) = 0.4267
+[B3] head | shift = mean sum|train-start - zero-start| | shift/epi | 1-step MSE zero-start | 1-step MSE train-start
+[B3]   0  | 0.0000 | 0.000 | 0.03308 | 0.03308
+[B3]   1  | 0.4346 | 1.019 | 0.03340 | 0.03291
+[B3]   2  | 0.4411 | 1.034 | 0.03385 | 0.03302
+[B3]   3  | 0.4276 | 1.002 | 0.03365 | 0.03284
+[B3]   4  | 0.4164 | 0.976 | 0.03375 | 0.03305
+[B3] heads 1-4: mean shift/epi = 1.008; MSE zero/train = 1.021; head-0 MSE / heads 1-4 MSE (zero start) = 0.983
+[B3] shift by group (heads 1-4 mean): lin_vel=0.0232, ang_vel=0.0664, gravity=0.0229, joint_pos=0.0302, joint_vel=0.1823, torque=0.1049
+[B7] windows=2048 rollout K=24 (open loop, logged actions, one random head per window as in imagination)
+[B7] step | MSE warm | MSE cold | cold/warm | epi warm | epi cold | cold/warm | gravity MSE cold/warm
+[B7]    1 | 0.03362 | 0.24428 |   7.27 | 0.4267 | 3.9094 |   9.16 |  10.33
+[B7]    2 | 0.04891 | 0.45117 |   9.23 | 0.3565 | 0.8049 |   2.26 |   3.84
+[B7]    3 | 0.06151 | 0.43869 |   7.13 | 0.3511 | 0.4213 |   1.20 |   2.85
+[B7]    5 | 0.07392 | 0.45147 |   6.11 | 0.3490 | 0.3593 |   1.03 |   2.92
+[B7]    9 | 0.11903 | 0.37170 |   3.12 | 0.3442 | 0.3265 |   0.95 |   2.66
+[B7]   17 | 0.19466 | 0.37645 |   1.93 | 0.3425 | 0.3107 |   0.91 |   2.15
+[B7]   24 | 0.26739 | 0.41205 |   1.54 | 0.3484 | 0.3261 |   0.94 |   1.68
+[B7] mean over 24 steps: MSE cold/warm = 2.55; epi cold/warm = 1.43; cold stays within 10% of warm from step >24
+
+=== shared_s2  (../../../logs/wm_fit/p1_refit_2026-10-09b/R2_shared_seed2/model_2000.pt)  [score] normalized inputs to WM training space
+[B3] windows=2048 repeats=3  mean epi (zero start, all heads) = 0.5260
+[B3] head | shift = mean sum|train-start - zero-start| | shift/epi | 1-step MSE zero-start | 1-step MSE train-start
+[B3]   0  | 0.0000 | 0.000 | 0.03007 | 0.03007
+[B3]   1  | 0.4532 | 0.862 | 0.03022 | 0.02991
+[B3]   2  | 0.4528 | 0.861 | 0.03073 | 0.03014
+[B3]   3  | 0.4698 | 0.893 | 0.03109 | 0.03082
+[B3]   4  | 0.4614 | 0.877 | 0.03049 | 0.03028
+[B3] heads 1-4: mean shift/epi = 0.873; MSE zero/train = 1.011; head-0 MSE / heads 1-4 MSE (zero start) = 0.982
+[B3] shift by group (heads 1-4 mean): lin_vel=0.0245, ang_vel=0.0536, gravity=0.0164, joint_pos=0.0367, joint_vel=0.2084, torque=0.1198
+[B7] windows=2048 rollout K=24 (open loop, logged actions, one random head per window as in imagination)
+[B7] step | MSE warm | MSE cold | cold/warm | epi warm | epi cold | cold/warm | gravity MSE cold/warm
+[B7]    1 | 0.03059 | 0.25201 |   8.24 | 0.5260 | 3.5680 |   6.78 |   8.71
+[B7]    2 | 0.03800 | 0.42236 |  11.11 | 0.4622 | 0.9609 |   2.08 |  14.76
+[B7]    3 | 0.04412 | 0.38405 |   8.70 | 0.4552 | 0.4238 |   0.93 |   7.26
+[B7]    5 | 0.05441 | 0.40406 |   7.43 | 0.4543 | 0.3810 |   0.84 |   3.93
+[B7]    9 | 0.08709 | 0.39205 |   4.50 | 0.4646 | 0.3517 |   0.76 |   2.95
+[B7]   17 | 0.18040 | 0.36727 |   2.04 | 0.4641 | 0.3487 |   0.75 |   1.65
+[B7]   24 | 0.28274 | 0.38898 |   1.38 | 0.4764 | 0.4248 |   0.89 |   1.34
+[B7] mean over 24 steps: MSE cold/warm = 2.74; epi cold/warm = 1.13; cold stays within 10% of warm from step >24
+
+=== R1_curated  (../../../logs/wm_fit/p1_refit_2026-10-09/R1_curated/model_2000.pt)  [score] normalized inputs to WM training space
+[B3] windows=2048 repeats=3  mean epi (zero start, all heads) = 0.3088
+[B3] head | shift = mean sum|train-start - zero-start| | shift/epi | 1-step MSE zero-start | 1-step MSE train-start
+[B3]   0  | 0.0000 | 0.000 | 0.19470 | 0.19470
+[B3]   1  | 2.9649 | 9.600 | 0.19563 | 0.21494
+[B3]   2  | 3.0614 | 9.912 | 0.19976 | 0.21895
+[B3]   3  | 3.1673 | 10.256 | 0.20151 | 0.22073
+[B3]   4  | 3.1388 | 10.163 | 0.19588 | 0.21567
+[B3] heads 1-4: mean shift/epi = 9.983; MSE zero/train = 0.911; head-0 MSE / heads 1-4 MSE (zero start) = 0.982
+[B3] shift by group (heads 1-4 mean): lin_vel=0.1696, ang_vel=0.3729, gravity=0.2071, joint_pos=0.2252, joint_vel=1.3824, torque=0.7260
+[B7] windows=2048 rollout K=24 (open loop, logged actions, one random head per window as in imagination)
+[B7] step | MSE warm | MSE cold | cold/warm | epi warm | epi cold | cold/warm | gravity MSE cold/warm
+[B7]    1 | 0.19598 | 0.11756 |   0.60 | 0.3088 | 3.3188 |  10.75 |   0.10
+[B7]    2 | 0.26610 | 0.44586 |   1.68 | 0.3053 | 3.7009 |  12.12 |   0.21
+[B7]    3 | 0.29129 | 0.78606 |   2.70 | 0.3015 | 1.7637 |   5.85 |   0.47
+[B7]    5 | 0.36082 | 0.76621 |   2.12 | 0.2990 | 0.5194 |   1.74 |   0.93
+[B7]    9 | 0.51702 | 0.99483 |   1.92 | 0.2994 | 0.2898 |   0.97 |   0.73
+[B7]   17 | 0.81032 | 0.90959 |   1.12 | 0.3057 | 0.2934 |   0.96 |   0.96
+[B7]   24 | 0.85985 | 0.99332 |   1.16 | 0.3076 | 0.2941 |   0.96 |   1.13
+[B7] mean over 24 steps: MSE cold/warm = 1.40; epi cold/warm = 2.16; cold stays within 10% of warm from step >24
+
+=== june_curated  (../../../logs/wm_fit/go2_curated_wm.pt)  [score] normalized inputs to WM training space
+[B3] windows=2048 repeats=3  mean epi (zero start, all heads) = 0.2470
+[B3] head | shift = mean sum|train-start - zero-start| | shift/epi | 1-step MSE zero-start | 1-step MSE train-start
+[B3]   0  | 0.0000 | 0.000 | 0.08499 | 0.08499
+[B3]   1  | 1.8181 | 7.361 | 0.08560 | 0.08349
+[B3]   2  | 1.9267 | 7.801 | 0.08626 | 0.08426
+[B3]   3  | 1.9000 | 7.692 | 0.08718 | 0.08520
+[B3]   4  | 1.8527 | 7.501 | 0.08718 | 0.08463
+[B3] heads 1-4: mean shift/epi = 7.589; MSE zero/train = 1.026; head-0 MSE / heads 1-4 MSE (zero start) = 0.982
+[B3] shift by group (heads 1-4 mean): lin_vel=0.1019, ang_vel=0.2240, gravity=0.0792, joint_pos=0.2400, joint_vel=0.7294, torque=0.4999
+[B7] windows=2048 rollout K=24 (open loop, logged actions, one random head per window as in imagination)
+[B7] step | MSE warm | MSE cold | cold/warm | epi warm | epi cold | cold/warm | gravity MSE cold/warm
+[B7]    1 | 0.08651 | 0.11440 |   1.32 | 0.2470 | 2.7868 |  11.28 |   0.37
+[B7]    2 | 0.11208 | 0.41044 |   3.66 | 0.2340 | 1.4498 |   6.20 |   1.29
+[B7]    3 | 0.13292 | 0.58316 |   4.39 | 0.2297 | 0.4646 |   2.02 |   2.62
+[B7]    5 | 0.17064 | 0.59445 |   3.48 | 0.2338 | 0.2830 |   1.21 |   2.12
+[B7]    9 | 0.25237 | 0.71430 |   2.83 | 0.2275 | 0.2499 |   1.10 |   2.17
+[B7]   17 | 0.34617 | 0.60539 |   1.75 | 0.2283 | 0.2334 |   1.02 |   1.80
+[B7]   24 | 0.39636 | 0.53526 |   1.35 | 0.2291 | 0.2175 |   0.95 |   1.52
+[B7] mean over 24 steps: MSE cold/warm = 2.13; epi cold/warm = 1.77; cold stays within 10% of warm from step >24
