@@ -1,0 +1,5 @@
+[fit] it 1900/2000 state=0.5961 seq=0.0000 contact=0.0174 term=0.0218 kl=0.0000 (2.74s/it)
+[fit] it 1950/2000 state=0.6088 seq=0.0000 contact=0.0169 term=0.0041 kl=0.0000 (2.74s/it)
+[fit] it 2000/2000 state=0.6006 seq=0.0000 contact=0.0161 term=0.0038 kl=0.0000 (2.74s/it)
+[fit] cuda peak_allocated_mb=12292 peak_reserved_mb=12726
+[fit] DONE -> ../../../logs/wm_fit/p1_refit_2026-10-09b/R2_shared_seed2/model_2000.pt  rows=1288000 real_terms=302 windows=1231460
