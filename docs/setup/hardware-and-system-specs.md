@@ -38,9 +38,3 @@ Which workloads each machine can support, in practice.
 The local laptop's ceiling is set by VRAM. The default RWM pretraining configuration computes system-dynamics losses over a GRU-based dynamics model with batches that exceed 8 GB. Reduced-scale pretraining (small batch, small replay buffer, short forecast horizon) fits within the local budget and is sufficient for verifying that the pipeline runs end-to-end.
 
 The lab workstation has 6× the VRAM and 8× the system RAM of the local laptop. Default-configuration training is expected to fit, including the imagination workload at the configured 8192 environments. The lab workstation is headless and is not used for code reading, documentation, or GUI-bound work; those remain local-only.
-
-## Storage
-
-Lab-workstation storage is sized to accommodate the codebase, submodules, the Docker environment, training logs, checkpoints, and experiment outputs over multiple training campaigns. A reasonable initial allocation is approximately 300 GB.
-
-If long training campaigns are run with frequent checkpointing, or if multiple experiment configurations are kept in parallel, the storage requirement grows past this baseline.

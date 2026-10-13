@@ -1,56 +1,103 @@
 # Current Status
 
-This page is the executive summary of where the project stands. It is intentionally short and consists almost entirely of pointers. The detailed content lives on the validation, implementation, and synthesis pages; this page only summarizes the state at the level a supervisor needs.
+*A one-page snapshot of where the project actually is. For the per-claim ledger see
+[Reproduction Status](../validation/reproduction-status.md); for the phase-by-phase narrative see the
+Validation section (Phases 4A-4G).*
 
-The README progress checklist is the primary place tracking *what is done* (with checkboxes). This page describes the *current state* in narrative form. The two are not redundant: the checklist tracks discrete milestones, this page describes the technical reality at the present moment.
+## One-line state
 
-## Summary
+The project's headline result is no longer the offline walker. It is a **mechanistic negative**: on a
+light, contact-dominated quadruped, broadening offline data improves world-model prediction while
+**flattening the ensemble disagreement MOPO relies on**. The bottleneck is **uncertainty calibration,
+not data volume**, demonstrated by a replicated decoupling between prediction error and disagreement.
 
-The project is in the documentation, validation, and code-understanding phase. The local Isaac Lab and RWM stack is operational. The baseline ANYmal-D path, a reduced-scale RWM pretraining path, and the offline RWM-U pipeline all run end-to-end on the local laptop. Full-scale RWM pretraining and imagination-based finetuning are planned for the lab workstation; the lab access is the next significant unblock for the RWM track. The RWM-U track has been validated at reduced scale locally.
+## The arc, compressed
 
-## What works locally
+1. **Online RWM/MBPO on Go2 (Phases 4B-4C).** Fixed the scoot (`feet_slide`); plain MBPO finetune
+ collapses via model exploitation.
+2. **Pivot to offline (Phase 4D).** The thesis method is offline RWM-U / MOPO-PPO; the online collapse
+ is motivation. Both online penalty arms collapse from a shared good state.
+3. **Offline pipeline + ANYmal gate (Phase 4E).** Built the offline Go2 pipeline and a real-env eval
+ harness; found Bug #1 (untrained-WM). ANYmal apparatus check passes with the authors' WM (0.417).
+4. **Curated WM + offline walker (Phase 4F).** Found and fixed Bug #2 (normalizer freeze); produced a
+ command-following but weak, seed-fragile offline walker at offline-ANYmal parity.
+5. **Uncertainty-calibration arc (Phase 4G).** Ran the ANYmal fitter gate (fitter not broken), hit the
+ ANYmal structural wall (ens1 reference → MOPO discriminator impossible there), built the
+ exploit-rollout diagnostic, and found the headline result below.
 
-The local laptop runs three validated paths:
+## The headline finding (Phase 4G)
 
-- The baseline `Init-v0` task reaches PPO learning iterations. Procedure and success criterion: [Baseline Execution](../validation/baseline-execution.md).
-- The `Pretrain-v0` task runs end-to-end at reduced scale and produces dynamics checkpoints. The default configuration exceeds the local 8 GB VRAM and is deferred to lab hardware. Procedure and reduced-scale settings: [World-Model Pretraining Check](../validation/world-model-pretraining-check.md).
-- The standalone offline RWM-U pipeline (`scripts/reinforcement_learning/model_based/`) runs end-to-end at reduced scale, completing 500 policy-training iterations against the shipped 10K-transition dataset and the materialized 25 MB pretrained world model. A Figure-3-style uncertainty-error evaluation and a $\lambda$ sweep have been performed at reduced scale. Procedure, results, and scope boundaries: [RWM-U Execution Check](../validation/rwm-u-execution-check.md).
+On two independent offline-policy failure traces, the failure-augmented WM shows next-state prediction
+error **19-25× higher** near failure than walking, while ensemble disagreement is **≈1×, flat**. The
+older curated WM gave ≈5× selective disagreement. Cross-checks rule out the trivial reads: the new WM
+predicts normal dynamics ≈3× *better*, and its walking-uncertainty baseline *rose* ≈3×, so it is
+**less selective**, not lower everywhere. High error with flat disagreement is *confidently wrong*:
+miscalibration, not ignorance.
 
-The reduced-scale RWM pretraining run required a small fix in the model-based runner. The fix is documented on [Submodules and Forks](../development/submodules-and-forks.md#rsl_rl_rwm-pretraining-fix) and the architectural detail is on [Implementation Analysis §11](../world-model/implementation-analysis.md#11-the-pretraining-fix).
+**Mechanism.** The world model is a **shared recurrent trunk + independent bootstrapped heads**: the
+paper's own architecture, faithfully reproduced. Epistemic uncertainty is head disagreement over shared
+features (measured state-head cosine ≈0.96, nearly parallel). The architecture sets a *ceiling* on
+diversity; broadening the data drives the heads up against it, collapsing disagreement exactly where the
+penalty is needed. The paper's epistemic estimator is therefore **fragile by construction**: strong
+when data is narrow, weak as data broadens.
 
-## What is blocked
+## What is solid (thesis-bearing, independent of the open lever)
 
-`Finetune-v0` (manager-based pipeline) has not been executed because the upstream config expects a pretrained dynamics checkpoint that does not exist locally and a policy run to resume from. The path forward is to generate the checkpoint via lab-scale `Pretrain-v0` and then write a project-specific finetune config pointing at it. Detail: [Checkpoint and Finetune Status](../validation/checkpoint-and-finetune-status.md).
+- The **uncertainty-miscalibration result** with the MSE-vs-disagreement decoupling, replicated on two
+ traces.
+- The **shared-trunk ceiling** mechanism, with the paper-faithful architecture confirmed.
+- The **exploit↔freeze conservatism frontier** (Phases 4E-4F) on a light quadruped.
+- Two diagnosed root-cause **bugs** (untrained-WM, normalizer freeze) and the confound ledger
+ ([Engineering Findings](../validation/engineering-findings.md)).
+- The bounded fitter verdict: **not broken**, but more exploitable than the ANYmal reference.
+- A deployable online `ens5` walker (hardware-demo artifact, separate from the offline result).
 
-Default-scale `Pretrain-v0` is blocked on local VRAM and is deferred to the lab workstation. The lab workstation has the hardware capacity but has not yet been used for project work.
+## What is open
 
-## Paper-to-code analysis
+The campaign is **closed on the from-scratch axis.** Stage-Mixed (Phase 4G) decorrelated the ensemble
+heads but did not beat the curated baseline; the reward-support proxy (Phase 4H) froze the policy as
+predicted. Across penalty, data volume, data composition, and reward support, no from-scratch
+configuration produces a robust offline Go2 walker, and the reason is mechanistic, not a bug.
 
-Both papers have been read in full and the upstream codebase has been traced component by component. The findings are split across two parallel sets of three pages each, plus a cross-paper bridge.
+The **warm-start** control has now been run on Go2 (Phase 4H, 3 seeds): initializing the offline policy
+from the clean online ens5 walker and refining against the Go2 world model. It is **locally
+non-destructive**, the output equals the input within seed noise (delta over the init checkpoint
+approximately zero, with feet_slide slightly worse), so it does not demonstrate refinement; it pins the
+discovery-versus-coverage explanation. With this, all levers are closed. Structural directions an
+offline-MBRL group would propose next (independent-trunk ensembles, better-calibrated uncertainty
+estimators, FK reward targets in the world model, warm-start refinement on coverage-rich data,
+morphology-aware reward) are recorded in
+[Phase 4H §5](../validation/phase-4h-policy-headtohead-and-reward-support.md#5-structural-directions-what-an-offline-mbrl-group-would-propose-next).
 
-For RWM (first paper):
+## Honest framing for write-up / defense
 
-- [Paper Analysis](../world-model/paper-analysis.md) describes the method as the paper presents it, with the equations, figures, and quantitative results.
-- [Implementation Analysis](../world-model/implementation-analysis.md) describes the manager-based pipeline architecturally.
-- [Paper-to-Code Synthesis](../world-model/paper-to-code-synthesis.md) aligns the two and surfaces four discrepancies: state mean predicted as a residual, state loss using sampled MSE rather than Gaussian NLL, imagination scale differing in the per-env / per-iteration accounting, and uncertainty hooks present but inactive in the manager-based pipeline.
+Lead with the **calibration finding + the shared-trunk ceiling + the two bugs**: solid regardless of
+the stage-Mixed outcome. Present the offline walker as a supporting *existence proof* at the
+exploit↔freeze frontier, not the headline. State plainly: there is **no code-level defect** separating
+us from the paper; the genuine differences are data composition (expert+noise vs PPO-replay Mixed),
+scale (≈1M vs the paper's 6M), and a lighter robot. The negative sits directly on top of the paper's own
+stated limitation that offline data lacks the failure/recovery transitions that matter.
 
-For RWM-U (second paper):
 
-- [Paper Analysis](../uncertainty-aware-world-model/paper-analysis.md) describes the method as the paper presents it.
-- [Implementation Analysis](../uncertainty-aware-world-model/implementation-analysis.md) describes the standalone offline pipeline architecturally, including the active configuration values, the dataset format, and the pretrained model shipping mechanism.
-- [Paper-to-Code Synthesis](../uncertainty-aware-world-model/paper-to-code-synthesis.md) aligns the two and surfaces two RWM-U-specific discrepancies (trajectory sampling vs ensemble-mean dynamics, standard-deviation-summed vs variance reduction for the epistemic signal) plus a sign and time-step convention that maps the paper's $\lambda$ to the code's negative weight.
+## Research questions (thesis spine)
 
-The [Relationship to Uncertainty-Aware RWM](../world-model/relationship-to-uncertainty-aware.md) page bridges the two: what stays the same between RWM and RWM-U, what changes, what the codebase implements for each, and what this means for project staging.
+The campaign resolves into four questions, each answered by experiment:
 
-## Reproduction ledger
+- **RQ1. Can offline RWM-U discover Go2 locomotion from scratch?** Not reliably. From-scratch runs
+  collapse to standing, sliding, weak tracking, or fall-prone motion, surviving penalty tuning, failure
+  augmentation, true-Mixed composition, and a reward-support proxy.
+- **RQ2. Is the failure only uncertainty calibration or missing failure data?** No. +fail and true-Mixed
+  change the uncertainty behavior (flat vs over-conservative) but do not recover robust from-scratch
+  walking, and true-Mixed does not beat the curated baseline.
+- **RQ3. Is it a missing reward-support issue?** A crude stance-motion proxy reduces sliding but
+  suppresses locomotion (freeze), so proxy reward shaping inside an exploitable model is not enough.
+- **RQ4. Can offline RWM-U refine an already-competent Go2 walker?** Warm-start is *locally
+  non-destructive*: across three seeds it preserves strong walking (~0.65-0.69 m/s, corr ~0.98), but the
+  output equals the competent input within seed noise and PPO barely updates, so this is staying-put, not
+  measurable refinement.
 
-The full per-claim status of execution and mapping claims is on the [Reproduction Status](../validation/reproduction-status.md) page. Of the sixteen execution claims tracked there, nine have positive validation status: five validated, two validated at reduced scale, and two qualitatively validated at reduced scale. The remaining seven are blocked on lab access, hardware availability, or are out of current project scope. Of the seventeen mapping claims, twelve are mapped (eight fully, three partially mapped, one mapped under sign and time-step convention), four are discrepancies noted, and one is a discrepancy in scale.
-
-## What is next
-
-The Phase 4 work splits into two natural tracks that can run independently:
-
-- *Lab-scale RWM*: take the manager-based pipeline to lab hardware. Full-scale `Pretrain-v0` (paper hyperparameters, 2500 iterations, batch 1024), generate a real dynamics checkpoint, then run `Finetune-v0` end-to-end. This unblocks the `Finetune-v0` checkpoint dependency and validates the manager-based path at paper scale.
-- *Go2 transfer prep*: the project's primary research contribution. Acquire a Go2 USD/URDF, set up an Isaac Lab Go2 flat-locomotion environment, retune reward weights, recompute observation normalization, and prepare for both online RWM and offline RWM-U runs on Go2.
-
-The dependency chain from there is documented on [Roadmap](roadmap.md).
+**Single defensible thesis claim.** Offline RWM-U transferred to Go2 as a *locally non-destructive*
+method around a competent policy, not as a reliable from-scratch locomotion-discovery method; the model
+is accurate only where the data is dense, and a light, slide-prone morphology with a slide-blind imagined
+reward makes from-scratch discovery exploitable, which together explain why a coverage-rich, heavier-robot
+setup reaches 0.91 and a 115k-transition Go2 setup does not.

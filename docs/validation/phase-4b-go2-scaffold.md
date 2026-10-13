@@ -1,4 +1,4 @@
-# Phase 4B — Go2 Inventory and RWM Config Scaffolding
+# Phase 4B: Go2 Inventory and RWM Config Scaffolding
 
 Status: complete.
 
@@ -34,14 +34,14 @@ inside the submodule and stay tracked. The source of truth lives at:
 
 ```text
 scripts/phase4b/
-├── inspect_go2_articulation.py      # diagnostic
-├── install_go2_config.py            # overlay into submodule
+├── inspect_go2_articulation.py # diagnostic
+├── install_go2_config.py # overlay into submodule
 └── go2_rwm_config/
-    ├── __init__.py                  # registers Init/Pretrain/Baseline
-    ├── flat_env_cfg.py              # env classes
-    └── agents/
-        ├── __init__.py
-        └── rsl_rl_ppo_cfg.py        # PPO and MBPO runner cfgs
+ ├── __init__.py # registers Init/Pretrain/Baseline
+ ├── flat_env_cfg.py # env classes
+ └── agents/
+ ├── __init__.py
+ └── rsl_rl_ppo_cfg.py # PPO and MBPO runner cfgs
 ```
 
 `install_go2_config.py` copies the `go2_rwm_config/` tree into the
@@ -57,7 +57,7 @@ To use on a new machine: clone, run sanity check, run
 training. To modify the config: edit in `scripts/phase4b/go2_rwm_config/`,
 re-run install with `--force`.
 
-## Step 1 — Go2 articulation inventory
+## Step 1: Go2 articulation inventory
 
 Inspector spawned a single Go2 via `UNITREE_GO2_CFG` in a minimal Isaac Lab
 scene, dumped joint and body data.
@@ -66,16 +66,16 @@ Key findings (full data in `docs/go2-transfer/go2-inventory.md`):
 
 - 12 joints in order: FL/FR/RL/RR hip, then FL/FR/RL/RR thigh, then FL/FR/RL/RR calf
 - 19 bodies: 1 base, 4 hips, 4 thighs, 4 calves, 4 feet, 2 head bodies
-  (`Head_upper`, `Head_lower`) — heads are passive (no joint)
+ (`Head_upper`, `Head_lower`), heads are passive (no joint)
 - system_state shape: 45 (3 lin_vel + 3 ang_vel + 3 gravity + 12 q + 12 q_dot + 12 tau)
-- Matches ANYmal-D system_state dimensions exactly — world-model
-  architecture can be reused without reshape
+- Matches ANYmal-D system_state dimensions exactly, world-model
+ architecture can be reused without reshape
 
 Front and rear thigh joints have different position limits
 (`[-1.571, +3.491]` vs `[-0.524, +4.538]`). Not blocking; relevant for
 reset randomization design.
 
-## Step 2 — RWM config scaffold
+## Step 2: RWM config scaffold
 
 Three Gym task IDs registered:
 
@@ -89,18 +89,18 @@ Env class hierarchy (mirrors RWM ANYmal-D):
 
 ```text
 UnitreeGo2RoughEnvCfg (upstream Isaac Lab)
-  └── UnitreeGo2FlatEnvCfg (RWM ANYmal-D-style reward weights, flat terrain)
-        ├── UnitreeGo2FlatEnvCfg_INIT (reverts to rough terrain, lighter penalties)
-        ├── UnitreeGo2FlatEnvCfg_PRETRAIN (adds system_* observation groups)
-        └── UnitreeGo2FlatEnvCfg_BASELINE (no system_* groups; default observations only)
+ └── UnitreeGo2FlatEnvCfg (RWM ANYmal-D-style reward weights, flat terrain)
+ ├── UnitreeGo2FlatEnvCfg_INIT (reverts to rough terrain, lighter penalties)
+ ├── UnitreeGo2FlatEnvCfg_PRETRAIN (adds system_* observation groups)
+ └── UnitreeGo2FlatEnvCfg_BASELINE (no system_* groups; default observations only)
 ```
 
 Runner class hierarchy:
 
 ```text
 UnitreeGo2FlatPPORunnerCfg (upstream Isaac Lab)
-  ├── UnitreeGo2FlatPPOPretrainRunnerCfg (class_name = MBPOOnPolicyRunner, world-model cfg)
-  └── UnitreeGo2FlatPPOBaselineRunnerCfg (class_name = OnPolicyRunner, RWM PPO hyperparameters)
+ ├── UnitreeGo2FlatPPOPretrainRunnerCfg (class_name = MBPOOnPolicyRunner, world-model cfg)
+ └── UnitreeGo2FlatPPOBaselineRunnerCfg (class_name = OnPolicyRunner, RWM PPO hyperparameters)
 ```
 
 Init-v0 reuses the upstream `UnitreeGo2FlatPPORunnerCfg` (upstream Go2 PPO
@@ -152,7 +152,7 @@ algorithm.max_grad_norm: 1.0
 
 These match RWM ANYmal-D paper values exactly.
 
-## Step 3 — Boot tests
+## Step 3: Boot tests
 
 ### Init-v0 (5 iters, 64 envs)
 
@@ -167,22 +167,22 @@ These match RWM ANYmal-D paper values exactly.
 - 20 iterations complete in ~30 seconds
 - All 5 observation groups present with correct shapes
 - 13 `System Dynamics/*` tensorboard tags written; zero `Imagination/*` tags
-  (correct for Pretrain, not Finetune)
+ (correct for Pretrain, not Finetune)
 - Dynamics losses cleanly decreasing:
 
-  | Loss | step 0 | step 19 | reduction |
-  |---|---|---|---|
-  | state_loss | 1099.79 | 187.38 | 5.9x |
-  | contact_loss | 0.343 | 0.154 | 2.2x |
-  | termination_loss | 0.1044 | 0.0003 | 347x |
+ | Loss | step 0 | step 19 | reduction |
+ |---|---|---|---|
+ | state_loss | 1099.79 | 187.38 | 5.9x |
+ | contact_loss | 0.343 | 0.154 | 2.2x |
+ | termination_loss | 0.1044 | 0.0003 | 347x |
 
 - Checkpoints saved at iter 0 and 20, ~18 MB each, combined-format
-  (PPO + dynamics state) matching ANYmal-D format
+ (PPO + dynamics state) matching ANYmal-D format
 
 ### Baseline-v0 (5 iters, 256 envs)
 
 - 5 iterations complete in ~3 seconds
-- Single observation group (`policy`, 48-dim) — no system_* groups
+- Single observation group (`policy`, 48-dim), no system_* groups
 - `class_name: OnPolicyRunner` (standard PPO, not MBPO) confirmed
 - All RWM PPO hyperparameters verified in saved `agent.yaml`
 - ~21k steps/s at 256 envs (faster than RWM tasks due to no world-model loop)
@@ -216,7 +216,7 @@ Does not establish:
 
 ## Next phase
 
-Phase 4C — real training. First step: Baseline-v0 at default 4096 envs,
+Phase 4C, real training. First step: Baseline-v0 at default 4096 envs,
 2000 iterations, RWM paper PPO hyperparameters. Establishes the
 comparison baseline against which RWM and RWM-U Go2 results will be
 reported.

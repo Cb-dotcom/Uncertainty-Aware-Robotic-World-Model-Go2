@@ -1,14 +1,12 @@
 # Lab Workstation Notes
 
-These notes document the lab Docker/workstation setup used for Phase 4A validation of the RWM/RWM-U project.
+These notes document the lab Docker/workstation setup. 
 
 ## Current lab target
 
 Observed lab host:
 
 ```text
-Host: k8s-worker-node-2
-User: ter-ws-3
 OS: Ubuntu 24.04.2
 GPU: NVIDIA RTX 6000 Ada Generation (49 GB VRAM)
 Driver: 570.211.01
@@ -32,7 +30,7 @@ docker start rwmu-cogar-cb
 docker exec -it rwmu-cogar-cb bash
 ```
 
-## Runtime pattern (corrected after Phase 4A)
+## Runtime pattern
 
 Inside the container, use Isaac Sim Python:
 
@@ -166,7 +164,7 @@ cd /workspace/Uncertainty-Aware-Robotic-World-Model-Go2
 bash lab/sanity-check.sh
 ```
 
-The sanity check verifies (10 checks total after Phase 4A update):
+The sanity check verifies:
 
 ```text
 [1] nvidia-smi works
@@ -182,21 +180,6 @@ The sanity check verifies (10 checks total after Phase 4A update):
 ```
 
 Expected: `10 passed, 0 failed`.
-
-## Shared GPU caveat
-
-The workstation GPU is shared. Phase 4A was blocked twice by an
-unrelated VLLM EngineCore process holding 44 GB of VRAM at idle (P8,
-0% util). The container's `nvidia-smi` only shows processes in the
-container's PID namespace; the offender is visible from the host:
-
-```bash
-# On lab host, not inside the container
-nvidia-smi
-```
-
-If memory shows allocated but no process listed inside the container,
-check the host. Coordinate before killing other people's idle processes.
 
 ## Phase 4A validation summary
 
