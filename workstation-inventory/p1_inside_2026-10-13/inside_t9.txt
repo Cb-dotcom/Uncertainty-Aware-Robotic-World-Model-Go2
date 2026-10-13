@@ -1,0 +1,107 @@
+trace=../../../logs/wm_fit/go2_plus_fail_ens5/exploit_trace/2026-06-21_14-30-38_9_policy499_trace.csv n_neg=5000 n_pre5=25 n_lead10=25 n_lead25=25
+[raw-state probe] pre5: AUC=0.997
+[raw-state probe] lead10: AUC=0.999
+[raw-state probe] lead25: AUC=0.997
+
+=== plusfail  (../../../logs/wm_fit/go2_plus_fail_ens5/model_2000.pt)
+sanity: max|epi - eval_signals epi| = 3.79e-03
+[epi] pre5: AUC=0.650  mean pos/neg=0.744/0.752
+[epi] lead10: AUC=0.652  mean pos/neg=0.767/0.752
+[epi] lead25: AUC=0.569  mean pos/neg=0.517/0.752
+[groups] pre5   group: share_neg share_pre5 AUC
+   lin_vel  : 0.04  0.05  0.758
+   ang_vel  : 0.07  0.09  0.718
+   gravity  : 0.04  0.06  0.739
+   joint_pos: 0.10  0.12  0.692
+   joint_vel: 0.42  0.42  0.646
+   torque   : 0.34  0.26  0.605
+[dims] top-5 per-dim AUC (pre5): d14=0.84, d13=0.79, d7=0.77, d5=0.77, d0=0.76
+[heads] weight cosine mean=0.131  | deviation corr on negatives mean=-0.247
+[trunk probe] pre5: AUC=0.999
+[trunk probe] lead10: AUC=0.999
+[trunk probe] lead25: AUC=0.996
+
+=== own_s0  (../../../logs/wm_fit/p1_refit_2026-10-09b/R2_ownnorm_seed0/model_2000.pt)
+[epi] pre5: AUC=0.961  mean pos/neg=1.380/0.477
+[epi] lead10: AUC=0.932  mean pos/neg=0.855/0.477
+[epi] lead25: AUC=0.880  mean pos/neg=0.807/0.477
+[groups] pre5   group: share_neg share_pre5 AUC
+   lin_vel  : 0.04  0.04  0.976
+   ang_vel  : 0.07  0.06  0.956
+   gravity  : 0.09  0.24  0.901
+   joint_pos: 0.12  0.12  0.980
+   joint_vel: 0.40  0.31  0.952
+   torque   : 0.29  0.22  0.940
+[dims] top-5 per-dim AUC (pre5): d6=0.99, d16=0.99, d14=0.99, d23=0.98, d11=0.98
+[heads] weight cosine mean=0.119  | deviation corr on negatives mean=-0.242
+[trunk probe] pre5: AUC=0.999
+[trunk probe] lead10: AUC=0.998
+[trunk probe] lead25: AUC=0.994
+
+=== shared_s0  (../../../logs/wm_fit/p1_refit_2026-10-09/R2_plusfail/model_2000.pt)
+[epi] pre5: AUC=0.942  mean pos/neg=1.091/0.431
+[epi] lead10: AUC=0.905  mean pos/neg=0.789/0.431
+[epi] lead25: AUC=0.754  mean pos/neg=0.539/0.431
+[groups] pre5   group: share_neg share_pre5 AUC
+   lin_vel  : 0.04  0.04  0.949
+   ang_vel  : 0.07  0.06  0.927
+   gravity  : 0.07  0.23  0.942
+   joint_pos: 0.11  0.13  0.983
+   joint_vel: 0.40  0.32  0.932
+   torque   : 0.30  0.22  0.860
+[dims] top-5 per-dim AUC (pre5): d19=1.00, d20=0.99, d0=0.98, d1=0.98, d14=0.98
+[heads] weight cosine mean=0.120  | deviation corr on negatives mean=-0.246
+[trunk probe] pre5: AUC=0.999
+[trunk probe] lead10: AUC=0.999
+[trunk probe] lead25: AUC=0.997
+
+=== shared_s2  (../../../logs/wm_fit/p1_refit_2026-10-09b/R2_shared_seed2/model_2000.pt)
+[epi] pre5: AUC=0.873  mean pos/neg=0.913/0.527
+[epi] lead10: AUC=0.849  mean pos/neg=0.851/0.527
+[epi] lead25: AUC=0.735  mean pos/neg=0.595/0.527
+[groups] pre5   group: share_neg share_pre5 AUC
+   lin_vel  : 0.03  0.03  0.892
+   ang_vel  : 0.08  0.10  0.944
+   gravity  : 0.04  0.07  0.979
+   joint_pos: 0.11  0.13  0.924
+   joint_vel: 0.43  0.40  0.855
+   torque   : 0.31  0.27  0.821
+[dims] top-5 per-dim AUC (pre5): d7=0.99, d3=0.97, d9=0.96, d10=0.96, d12=0.95
+[heads] weight cosine mean=0.137  | deviation corr on negatives mean=-0.249
+[trunk probe] pre5: AUC=1.000
+[trunk probe] lead10: AUC=0.999
+[trunk probe] lead25: AUC=0.996
+
+=== R1_curated  (../../../logs/wm_fit/p1_refit_2026-10-09/R1_curated/model_2000.pt)
+[epi] pre5: AUC=0.935  mean pos/neg=0.528/0.308
+[epi] lead10: AUC=0.896  mean pos/neg=0.449/0.308
+[epi] lead25: AUC=0.787  mean pos/neg=0.411/0.308
+[groups] pre5   group: share_neg share_pre5 AUC
+   lin_vel  : 0.06  0.06  0.879
+   ang_vel  : 0.10  0.10  0.859
+   gravity  : 0.06  0.06  0.927
+   joint_pos: 0.16  0.16  0.950
+   joint_vel: 0.36  0.37  0.971
+   torque   : 0.26  0.25  0.905
+[dims] top-5 per-dim AUC (pre5): d19=0.99, d8=0.98, d18=0.98, d24=0.97, d15=0.97
+[heads] weight cosine mean=0.124  | deviation corr on negatives mean=-0.248
+[trunk probe] pre5: AUC=0.997
+[trunk probe] lead10: AUC=0.999
+[trunk probe] lead25: AUC=0.983
+
+=== june_curated  (../../../logs/wm_fit/go2_curated_wm.pt)
+[epi] pre5: AUC=0.972  mean pos/neg=0.471/0.247
+[epi] lead10: AUC=0.969  mean pos/neg=0.413/0.247
+[epi] lead25: AUC=0.936  mean pos/neg=0.358/0.247
+[groups] pre5   group: share_neg share_pre5 AUC
+   lin_vel  : 0.05  0.05  0.935
+   ang_vel  : 0.07  0.06  0.809
+   gravity  : 0.06  0.13  0.972
+   joint_pos: 0.20  0.19  0.977
+   joint_vel: 0.32  0.30  0.950
+   torque   : 0.30  0.27  0.956
+[dims] top-5 per-dim AUC (pre5): d19=0.97, d36=0.97, d33=0.96, d6=0.96, d15=0.95
+[heads] weight cosine mean=0.128  | deviation corr on negatives mean=-0.215
+[trunk probe] pre5: AUC=0.997
+[trunk probe] lead10: AUC=0.995
+[trunk probe] lead25: AUC=0.996
